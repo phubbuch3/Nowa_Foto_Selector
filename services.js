@@ -157,63 +157,74 @@ class SelectStudioService {
     }
 
     // --- Resend Mail ---
+    // --- EmailJS ---
     async sendMail(type, project) {
-        console.log(`Preparing Resend Mail: ${type} for ${project.email}`);
+        console.log(`Sending Mail via EmailJS: ${type} for ${project.email}`);
 
-        // Ensure valid base URL for local or hosted
-        // For local file://, this might be tricky, but we try to construct a relative link
-        // In production, use your actual domain.
-        // Helper to get the directory path and append customer.html
+        // Base URL Logic (Auto-detect environment)
         let currentUrl = window.location.href.split('?')[0];
-        // Strip the filename (e.g. index.html) to get the base directory
+        // Strip the filename to get folder
         const basePath = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
-        let baseUrl = basePath + 'customer.html';
-        const cleanBaseUrl = baseUrl;
 
-        const link = `${cleanBaseUrl}?projectId=${project.id}`;
+        // Define clean entry points
+        const adminUrl = basePath + 'index.html';          // Admin Dashboard
+        const galleryUrl = basePath + 'customer.html?projectId=' + project.id; // Customer View
 
-        let subject = '';
-        let htmlBody = '';
+        let templateParams = {
+            to_email: project.email,
+            to_name: project.email.split('@')[0],
+            project_id: project.id,
+            admin_email: "phubbuch3@gmail.com", // YOUR Email (Photographer)
+            link_gallery: galleryUrl,
+            link_admin: adminUrl,
+            message: "",
+            subject: "",
+            btn_text: "Ansehen",
+            link_action: galleryUrl
+        };
 
+        // Configure Message based on Type
         if (type === 'UPLOAD_READY') {
-            subject = 'Deine Galerie ist online!';
-            htmlBody = `<p>Hallo!</p><p>Deine Bilder sind bereit. Bitte triff deine Auswahl hier:</p><p><a href="${link}">${link}</a></p>`;
-        } else if (type === 'SELECTION_DONE') {
-            subject = 'Auswahl erhalten';
-            htmlBody = `<p>Der Kunde hat gewählt!</p><p>Anzahl: ${Object.keys(project.selections).length}</p><p><a href="${link}">Zum Projekt</a></p>`;
-        } else if (type === 'FINAL_DELIVERY') {
-            subject = 'Fertige Bilder';
-            htmlBody = `<p>Deine Bilder sind fertig!</p><p><a href="${link}">Zum Download</a></p>`;
+            templateParams.subject = "Deine Galerie ist online! 📸";
+            templateParams.message = `Deine Bilder sind bereit. Du kannst ab sofort deine Auswahl treffen.`;
+            templateParams.link_action = galleryUrl;
+            templateParams.btn_text = "Galerie ansehen";
+        }
+        else if (type === 'SELECTION_DONE') {
+            // Switch recipient to Admin
+            templateParams.to_email = templateParams.admin_email;
+            templateParams.to_name = "Admin";
+            templateParams.subject = "Neue Auswahl vom Kunden ✅";
+            templateParams.message = `Der Kunde (${project.email}) hat ${Object.keys(project.selections).length} Bilder ausgewählt.`;
+            templateParams.link_action = adminUrl;
+            templateParams.btn_text = "Zum Admin Dashboard";
+        }
+        else if (type === 'FINAL_DELIVERY') {
+            templateParams.subject = "Deine fertigen Bilder sind da! ✨";
+            templateParams.message = `Die Bearbeitung ist abgeschlossen. Du kannst deine Bilder jetzt herunterladen.`;
+            templateParams.link_action = galleryUrl; // Ideally this should be a direct download link or zip, but gallery view works
+            templateParams.btn_text = "Bilder herunterladen";
         }
 
-        // Resend API Call
         try {
-            const response = await fetch('https://api.resend.com/emails', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${RESEND_API_KEY}`
-                },
-                body: JSON.stringify({
-                    from: 'onboarding@resend.dev',
-                    to: project.email,
-                    subject: subject,
-                    html: htmlBody
-                })
-            });
+            // ⚠️ REPLACE WITH YOUR EMAILJS KEYS
+            const SERVICE_ID = "YOUR_SERVICE_ID";
+            const TEMPLATE_ID = "YOUR_TEMPLATE_ID";
 
-            if (response.ok) {
-                console.log('✅ Resend success');
-                // alert('E-Mail gesendet!');
-            } else {
-                const err = await response.json();
-                console.error('❌ Resend Error:', err);
-                alert(`Mail-Fehler (Resend): ${err.name} - ${err.message}. \n\nHinweis: Nutze 'onboarding@resend.dev' als Absender.`);
+            if (typeof emailjs === 'undefined') {
+                console.error("EmailJS SDK not loaded.");
+                alert("EmailJS SDK fehlt. Bitte index.html prüfen.");
+                return;
             }
-        } catch (e) {
-            console.error('Fetch Error:', e);
-            // Fallback
-            window.open(`mailto:${project.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(link)}`);
+
+            await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams);
+            console.log('✅ Mail sent successfully via EmailJS');
+            // alert("E-Mail erfolgreich gesendet!"); // Optional feedback
+        } catch (error) {
+            console.error('❌ EmailJS Error:', error);
+            alert("Mail konnte nicht gesendet werden. (Hast du die Keys in services.js ersetzt?)");
+            // Fallback to mailto
+            window.open(`mailto:${templateParams.to_email}?subject=${encodeURIComponent(templateParams.subject)}&body=${encodeURIComponent(templateParams.message + "\n\nLink: " + templateParams.link_action)}`);
         }
     }
 }
