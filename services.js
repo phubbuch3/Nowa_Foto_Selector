@@ -228,10 +228,10 @@ class SelectStudioService {
             // Switch recipient to Admin
             templateParams.to_email = templateParams.admin_email;
             templateParams.to_name = "Admin";
-            templateParams.subject = "Neue Auswahl vom Kunden ✅";
-            templateParams.message = `Der Kunde (${project.email}) hat ${Object.keys(project.selections).length} Bilder ausgewählt.`;
+            templateParams.subject = `Kunde ${project.email} hat ausgewählt ✅`;
+            templateParams.message = `Der Kunde ${project.email} hat seine Foto- und Retusche-Auswahl getroffen (${Object.keys(project.selections).length} Bilder). Du kannst die Bilder über diesen Link herunterladen und bearbeiten.`;
             templateParams.link_action = adminUrl;
-            templateParams.btn_text = "Zum Admin Dashboard";
+            templateParams.btn_text = "Zur Bearbeitung (Admin)";
         }
         else if (type === 'FINAL_DELIVERY') {
             templateParams.subject = "Deine fertigen Bilder sind da! ✨";
