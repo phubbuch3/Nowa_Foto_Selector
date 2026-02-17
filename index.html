@@ -4,208 +4,770 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Select Studio | Photo Selection</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <title>Select Studio | Admin Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Admin Specific Styles Override/Addon */
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--color-border);
+            padding-bottom: 20px;
+        }
+
+        .dashboard-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: var(--color-surface);
+            padding: 15px 25px;
+            border: 1px solid var(--color-border);
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+        }
+
+        /* Create Form */
+        .create-project-card {
+            background: var(--color-surface);
+            padding: 30px;
+            border: 1px solid var(--color-border);
+            margin-bottom: 40px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 20px;
+            align-items: end;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        input[type="email"] {
+            background: transparent;
+            border: 1px solid var(--color-border);
+            color: var(--color-text);
+            padding: 10px;
+            font-family: inherit;
+        }
+
+        input:focus {
+            border-color: var(--color-text);
+            outline: none;
+        }
+
+        /* Project Table */
+        .project-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .project-table th {
+            text-align: left;
+            padding: 15px;
+            border-bottom: 1px solid var(--color-border);
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+
+        .project-table td {
+            padding: 15px;
+            border-bottom: 1px solid #222;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .status-selection {
+            background: #333;
+            color: #fff;
+        }
+
+        .status-processing {
+            background: #ffaa00;
+            color: #000;
+        }
+
+        .status-completed {
+            background: #00ff88;
+            color: #000;
+        }
+
+        .action-link {
+            color: var(--color-text-muted);
+            text-decoration: none;
+            margin-right: 15px;
+            font-size: 0.9rem;
+        }
+
+        .action-link:hover {
+            color: var(--color-text);
+            text-decoration: underline;
+        }
+
+        .btn-action {
+            background: var(--color-text);
+            color: var(--color-bg);
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        /* Gallery Grid View */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .gallery-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+
+        .gallery-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .gallery-preview {
+            height: 180px;
+            background: #222;
+            width: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-info {
+            padding: 15px;
+        }
+
+        .gallery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .gallery-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin: 0;
+            color: var(--color-text);
+        }
+
+        .gallery-date {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+        }
+
+        .gallery-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-select {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            color: var(--color-text);
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+
+        /* Fix scrolling for Admin Page */
+        body {
+            overflow: auto !important;
+            height: auto !important;
+        }
+    </style>
 </head>
 
 <body>
 
-    <div class="app-container">
+    <div class="admin-container">
 
-        <!-- Sidebar / Header on Mobile -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h1 style="font-size: 1.5rem;">SELECT STUDIO</h1>
-                <!-- Share Button for Sidebar (Mobile/Tablet) could go here but main header is better -->
+        <header class="dashboard-header">
+            <h1>Select Studio Cloud <span style="font-weight:300; opacity:0.5;">| Admin</span></h1>
+
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <span class="stat-number" id="total-projects">0</span>
+                    <span class="stat-label">Projekte</span>
+                </div>
+                <!-- Add more stats later -->
+            </div>
+        </header>
+
+        <!-- Create Project -->
+        <section class="create-project-card">
+            <h2 style="margin-bottom: 20px; font-weight: 400;">Neuer Auftrag (Upload)</h2>
+
+            <!-- File Upload Zone -->
+            <div id="drop-zone" class="upload-zone"
+                style="border: 2px dashed var(--color-border); padding: 40px; text-align: center; margin-bottom: 30px; cursor: pointer; transition: all 0.2s;">
+                <div style="font-size: 2rem; margin-bottom: 10px;">☁️</div>
+                <p style="color: var(--color-text-muted);">Bilder hier ablegen oder klicken</p>
+                <input type="file" id="file-input" multiple accept="image/*" style="display: none;">
+                <div id="preview-area" class="preview-grid"></div>
             </div>
 
-            <div class="package-selector">
-                <label for="package-select" class="label-small">PAKET GRÖSSE</label>
-                <div class="select-wrapper">
-                    <select id="package-select">
+            <form id="create-project-form">
+                <div class="input-group">
+                    <label class="label-small">Kunden E-Mail</label>
+                    <input type="email" id="client-email" placeholder="kunde@example.com" required>
+                </div>
+
+                <div class="input-group">
+                    <label class="label-small">Paket Größe</label>
+                    <select id="package-size" class="filter-select" style="width: 100%;">
                         <option value="5">Small (5 Bilder)</option>
                         <option value="12" selected>Medium (12 Bilder)</option>
                         <option value="20">Large (20 Bilder)</option>
+                        <option value="50">Jumbo (50 Bilder)</option>
                     </select>
                 </div>
-                <p style="font-size: 0.8rem; color: #888; margin-top: 10px; line-height: 1.4;">
-                    Wähle die Anzahl der Bilder, die du bearbeiten lassen möchtest. Du kannst für jedes Bild
-                    individuelle Retusche-Optionen wählen oder unten eine gemeinsame Auswahl für alle treffen.
-                </p>
-            </div>
 
-            <div class="selection-summary">
-                <div class="counter-display">
-                    <span id="current-count">00</span>
-                    <span class="separator">/</span>
-                    <span id="max-count">12</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progress-fill"></div>
-                </div>
-
-                <button id="btn-bulk-retouch" class="btn-secondary"
-                    style="width:100%; margin-bottom: 10px; font-size: 0.8rem; display: none;">
-                    FÜR ALLE CHECKEN
-                </button>
-
-                <div class="selected-list" id="selected-list">
-                    <!-- Selected items will be injected here -->
-                    <div class="empty-state">Noch keine Bilder ausgewählt.</div>
-                </div>
-            </div>
-
-            <div class="sidebar-footer">
-                <button id="submit-btn" class="btn-primary" disabled>SELECTION ABSENDEN</button>
-            </div>
-        </aside>
-
-        <!-- Main Content Area -->
-        <main class="main-content">
-            <header class="gallery-top-bar">
-                <div class="gallery-info-bar">
-                    <span id="gallery-title-text" style="font-weight: 600;">Main Gallery</span>
-                </div>
-                <div class="gallery-actions">
-                    <button id="btn-share" class="btn-secondary">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
-                            <polyline points="16 6 12 2 8 6"></polyline>
-                            <line x1="12" y1="2" x2="12" y2="15"></line>
-                        </svg>
-                        Teilen
-                    </button>
-                    <!-- Admin Links -->
-                    <a href="admin.html" id="admin-link" class="btn-text"
-                        style="display:none; font-size:0.8rem;">Admin</a>
-                </div>
-            </header>
-
-            <div class="grid-container" id="photo-grid">
-                <!-- Grid items will be injected here via JS -->
-            </div>
-        </main>
-
+                <button type="submit" id="btn-create" class="btn-primary"
+                    style="width: auto; min-width: 150px;">GALLERIE ERSTELLEN</button>
     </div>
+    </form>
+    </section>
 
-    <!-- Retouch Modal -->
-    <div class="modal-overlay" id="retouch-modal" hidden>
-        <div class="modal-content">
-            <header class="modal-header">
-                <h2 id="modal-image-title">BILD #001</h2>
-                <button class="close-btn" id="modal-close">&times;</button>
-            </header>
+    <!-- Project Galleries -->
+    <section>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="font-weight: 400; margin: 0;">Meine Gallerien</h2>
+        </div>
 
-            <div class="modal-body">
-                <p class="modal-instruction">Wähle Retusche-Optionen (Optional):</p>
-                <form id="retouch-form" class="retouch-options">
-                    <label class="checkbox-wrapper">
-                        <input type="checkbox" name="retouch" value="Augenringe">
-                        <span class="custom-checkbox"></span>
-                        <span class="label-text">Augenringe entfernen</span>
-                    </label>
-                    <label class="checkbox-wrapper">
-                        <input type="checkbox" name="retouch" value="Zähne">
-                        <span class="custom-checkbox"></span>
-                        <span class="label-text">Zähne aufhellen</span>
-                    </label>
-                    <label class="checkbox-wrapper">
-                        <input type="checkbox" name="retouch" value="Reflexionen">
-                        <span class="custom-checkbox"></span>
-                        <span class="label-text">Brillen-Reflexionen</span>
-                    </label>
-                    <label class="checkbox-wrapper">
-                        <input type="checkbox" name="retouch" value="Haut">
-                        <span class="custom-checkbox"></span>
-                        <span class="label-text">Hautunreinheiten</span>
-                    </label>
-                    <label class="checkbox-wrapper">
-                        <input type="checkbox" name="retouch" value="Hintergrund">
-                        <span class="custom-checkbox"></span>
-                        <span class="label-text">Hintergrund Clean-up</span>
-                    </label>
-                </form>
-            </div>
+        <div class="filter-bar">
+            <input type="text" id="filter-search" placeholder="Suche nach E-Mail..."
+                style="background: var(--color-surface); border: 1px solid var(--color-border); padding: 8px; color: white;">
 
-            <footer class="modal-footer" style="display: flex; justify-content: space-between;">
-                <button class="btn-text" id="modal-deselect" style="color: #ff4444;">BILD ABWÄHLEN</button>
+            <select id="filter-status" class="filter-select">
+                <option value="ALL">Alle Status</option>
+                <option value="SELECTION">Auswahl offen</option>
+                <option value="PROCESSING">In Bearbeitung</option>
+                <option value="COMPLETED">Abgeschlossen</option>
+            </select>
+
+            <select id="sort-by" class="filter-select">
+                <option value="date-desc">Neueste zuerst</option>
+                <option value="date-asc">Älteste zuerst</option>
+                <option value="email-asc">E-Mail (A-Z)</option>
+            </select>
+        </div>
+
+        <div id="gallery-grid" class="gallery-grid">
+            <!-- Injected via JS -->
+        </div>
+
+        <p id="empty-msg" style="text-align: center; color: #666; display: none; margin-top: 40px;">
+            Keine Gallerien gefunden.
+        </p>
+    </section>
+
+    <!-- Project Detail Modal -->
+    <div id="detail-modal" class="modal-overlay" hidden
+        style="background: rgba(0,0,0,0.8); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: flex; align-items: center; justify-content: center;">
+        <div class="modal-content"
+            style="background: var(--color-surface); padding: 30px; border: 1px solid var(--color-border); max-width: 900px; width: 90%; max-height: 90vh; overflow-y: auto; position: relative;">
+            <button id="close-detail"
+                style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: #fff; font-size: 2rem; cursor: pointer;">&times;</button>
+
+            <h2 id="detail-title" style="margin-bottom: 20px;">Projekt Details</h2>
+
+            <div
+                style="margin-bottom: 30px; display: flex; gap: 40px; border-bottom: 1px solid #333; padding-bottom: 20px;">
                 <div>
-                    <button class="btn-text" id="modal-cancel">Abbrechen</button>
-                    <button class="btn-primary" id="modal-save">SPEICHERN & AUSWÄHLEN</button>
+                    <span class="label-small">Kunde</span><br>
+                    <span id="detail-email" style="font-size: 1.2rem;">-</span>
                 </div>
-            </footer>
-        </div>
-    </div>
-
-    <!-- Share Modal -->
-    <div class="modal-overlay" id="share-modal" hidden>
-        <div class="modal-content" style="max-width: 500px;">
-            <header class="modal-header">
-                <h2>Gallerie Teilen</h2>
-                <button class="close-btn" id="share-close">&times;</button>
-            </header>
-            <div class="modal-body" style="padding: 20px 0;">
-
-                <div style="margin-bottom: 20px;">
-                    <label class="label-small" style="display:block; margin-bottom: 8px;">Link zum Bearbeiten
-                        (Kunde)</label>
-                    <p style="font-size: 0.8rem; color: #888; margin-bottom: 8px;">Kunde kann Bilder auswählen und
-                        Favoriten markieren.</p>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="share-link-edit" readonly
-                            style="flex:1; background: #222; border: 1px solid #444; padding: 10px; color: #fff; border-radius: 4px;">
-                        <button class="btn-secondary" id="copy-edit">Kopieren</button>
-                    </div>
+                <div>
+                    <span class="label-small">Paket</span><br>
+                    <span id="detail-package">-</span>
                 </div>
-
-                <div style="border-top: 1px solid #333; padding-top: 20px;">
-                    <label class="label-small" style="display:block; margin-bottom: 8px;">Link zum Anschauen
-                        (Read-Only)</label>
-                    <p style="font-size: 0.8rem; color: #888; margin-bottom: 8px;">Nur betrachten, keine Auswahl
-                        möglich.</p>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="share-link-view" readonly
-                            style="flex:1; background: #222; border: 1px solid #444; padding: 10px; color: #fff; border-radius: 4px;">
-                        <button class="btn-secondary" id="copy-view">Kopieren</button>
-                    </div>
+                <div>
+                    <span class="label-small">Status</span><br>
+                    <span id="detail-status">-</span>
                 </div>
+            </div>
 
+            <h3 style="margin-bottom: 15px;">Ausgewählte Bilder</h3>
+            <div id="detail-grid"
+                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;">
+                <!-- Selections Injected Here -->
+            </div>
+
+            <div style="margin-top: 30px; border-top: 1px solid #333; padding-top: 20px;">
+                <h3 style="margin-bottom: 10px;">Finale Bilder hochladen</h3>
+                <p class="label-small" style="margin-bottom: 15px;">Lade die retuschierten Bilder hier hoch, um das
+                    Projekt abzuschließen und den Kunden zu benachrichtigen.</p>
+
+                <div id="finals-drop-zone"
+                    style="border: 2px dashed #444; padding: 20px; text-align: center; margin-bottom: 20px; cursor: pointer;">
+                    <span style="font-size: 1.5rem;">✨</span><br>
+                    <span style="color: #888;">Finale Bilder hier ablegen</span>
+                    <input type="file" id="finals-input" multiple accept="image/*" style="display: none;">
+                </div>
+                <div id="finals-preview"
+                    style="display: flex; gap: 10px; overflow-x: auto; margin-bottom: 15px; height: 60px;"></div>
+
+                <div style="text-align: right;">
+                    <button id="btn-complete-project" class="btn-primary" disabled>Bilder hochladen &
+                        Abschließen</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Lightbox -->
-    <div id="lightbox" class="lightbox" hidden>
-        <button id="lb-close" class="lb-close">&times;</button>
-        <button id="lb-prev" class="lb-nav lb-prev">&#10094;</button>
-        <button id="lb-next" class="lb-nav lb-next">&#10095;</button>
-
-        <div class="lb-content">
-            <img id="lb-img" src="" alt="">
-        </div>
-
-        <div class="lb-controls">
-            <!-- Optional: Selection/Favorite button in lightbox -->
-            <button id="lb-select-btn" class="btn-primary" style="padding: 8px 16px;">Auswählen</button>
-        </div>
     </div>
 
-    <!-- Limit Warning Toast -->
-    <div id="toast" class="toast" hidden>
-        Paket-Limit erreicht. Bitte entferne ein Bild, um ein neues zu wählen.
-    </div>
-
-    <!-- Firebase Compat SDKs -->
+    <!-- Firebase Compat SDKs (Safe for file:// usage) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
+    <!-- Services -->
     <script src="services.js"></script>
-    <script src="script.js"></script>
+    <script>
+        // Inline Admin Logic (Simple enough to keep here or move to admin.js)
+        document.addEventListener('DOMContentLoaded', async () => {
+            const form = document.getElementById('create-project-form');
+            const listBody = null; // Removed table body reference
+            const statTotal = document.getElementById('total-projects');
+
+            // Upload Logic
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('file-input');
+            const previewArea = document.getElementById('preview-area');
+            let selectedFiles = [];
+
+            // Drag & Drop
+            dropZone.addEventListener('click', () => fileInput.click());
+            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = '#fff'; });
+            dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.style.borderColor = '#333'; });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#333';
+                handleFiles(e.dataTransfer.files);
+            });
+            fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+            function handleFiles(files) {
+                selectedFiles = Array.from(files);
+                previewArea.innerHTML = '';
+
+                if (selectedFiles.length === 0) return;
+
+                const grid = document.createElement('div');
+                grid.style.display = 'grid';
+                grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(80px, 1fr))';
+                grid.style.gap = '10px';
+                grid.style.marginTop = '20px';
+
+                selectedFiles.slice(0, 10).forEach(file => { // Show max 10 preview
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(file);
+                    img.style.width = '100%';
+                    img.style.aspectRatio = '1';
+                    img.style.objectFit = 'cover';
+                    img.style.borderRadius = '4px';
+                    grid.appendChild(img);
+                });
+
+                if (selectedFiles.length > 10) {
+                    const more = document.createElement('div');
+                    more.textContent = `+${selectedFiles.length - 10} mehr`;
+                    more.style.display = 'flex';
+                    more.style.alignItems = 'center';
+                    more.style.justifyContent = 'center';
+                    more.style.fontSize = '0.8rem';
+                    more.style.color = '#888';
+                    grid.appendChild(more);
+                }
+
+                previewArea.appendChild(grid);
+            }
+
+            // Render List
+            // Render List
+            async function refreshList() {
+                const projects = await window.selectService.getAllProjects();
+                statTotal.textContent = projects.length;
+                renderGalleryGrid(projects);
+            }
+
+            function renderGalleryGrid(projects) {
+                const grid = document.getElementById('gallery-grid');
+                if (!grid) {
+                    console.error("Gallery Grid Element not found!");
+                    return;
+                }
+
+                const emptyMsg = document.getElementById('empty-msg');
+                const filterSearch = document.getElementById('filter-search').value.toLowerCase();
+                const filterStatus = document.getElementById('filter-status').value;
+                const sortBy = document.getElementById('sort-by').value;
+
+                console.log("Rendering Grid with", projects.length, "projects");
+
+                // Filter
+                let filtered = projects.filter(p => {
+                    const status = p.status || 'UNKNOWN';
+                    const email = p.email || '';
+                    if (filterStatus !== 'ALL' && status !== filterStatus) return false;
+                    if (filterSearch && !email.toLowerCase().includes(filterSearch)) return false;
+                    return true;
+                });
+
+                // Sort
+                filtered.sort((a, b) => {
+                    const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+                    const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+                    const emailA = a.email || '';
+                    const emailB = b.email || '';
+
+                    if (sortBy === 'date-desc') return dateB - dateA;
+                    if (sortBy === 'date-asc') return dateA - dateB;
+                    if (sortBy === 'email-asc') return emailA.localeCompare(emailB);
+                    return 0;
+                });
+
+                grid.innerHTML = '';
+
+                if (filtered.length === 0) {
+                    if (emptyMsg) emptyMsg.style.display = 'block';
+                    grid.style.display = 'none';
+                    return;
+                }
+
+                if (emptyMsg) emptyMsg.style.display = 'none';
+                grid.style.display = 'grid'; // Ensure grid display
+
+                filtered.forEach(p => {
+                    const date = p.createdAt ? new Date(p.createdAt).toLocaleDateString('de-DE') : 'Kein Datum';
+                    const status = p.status || 'UNKNOWN';
+                    const email = p.email || 'Keine E-Mail';
+
+                    let badgeClass = 'status-selection';
+                    if (status === 'PROCESSING') badgeClass = 'status-processing';
+                    if (status === 'COMPLETED') badgeClass = 'status-completed';
+
+                    // Use first asset as preview
+                    const previewUrl = (p.assets && p.assets.length > 0) ? p.assets[0].url : 'https://placehold.co/400x300?text=No+Image';
+
+                    const card = document.createElement('div');
+                    card.className = 'gallery-card';
+                    card.style.cursor = 'pointer';
+
+                    // Click handler
+                    card.onclick = (e) => {
+                        if (e.target.closest('button') || e.target.closest('a')) return;
+                        openDetailModal(p.id);
+                    };
+
+                    card.innerHTML = `
+                        <div style="position:relative; aspect-ratio: 3/2; overflow:hidden;">
+                            <img src="${previewUrl}" class="gallery-preview" style="width:100%; height:100%; object-fit:cover;">
+                            <div style="position:absolute; top:10px; right:10px;">
+                                <span class="status-badge ${badgeClass}">${status}</span>
+                            </div>
+                        </div>
+                        <div class="gallery-info" style="padding:15px;">
+                            <div class="gallery-header" style="margin-bottom:10px;">
+                                <h3 class="gallery-title" style="margin:0; font-size:1.1rem;">${email}</h3>
+                                <span class="gallery-date" style="font-size:0.8rem; color:#888;">${date}</span>
+                            </div>
+                            <div style="font-size: 0.85rem; color: #aaa; margin-bottom: 15px;">
+                                <span>📦 ${p.packageSize || '-'} Bilder</span> • 
+                                <span>🖼️ ${p.assets ? p.assets.length : 0} Uploads</span>
+                            </div>
+                            
+                            <div class="gallery-footer" style="display:flex; gap:10px;">
+                                <button class="btn-secondary" style="width:auto; font-size:0.8rem; padding:4px 8px;" onclick="openDetailModal('${p.id}')">Bearbeiten</button>
+                                <a href="customer.html?projectId=${p.id}" target="_blank" class="btn-primary" style="width:auto; font-size:0.8rem; padding:4px 8px; text-decoration:none; text-align:center;">Galerie ansehen ↗</a>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            // Filter Event Listeners
+            const fSearch = document.getElementById('filter-search');
+            if (fSearch) fSearch.addEventListener('input', refreshList);
+
+            const fStatus = document.getElementById('filter-status');
+            if (fStatus) fStatus.addEventListener('change', refreshList);
+
+            const fSort = document.getElementById('sort-by');
+            if (fSort) fSort.addEventListener('change', refreshList);
+
+
+            // Modal Logic
+            const detailModal = document.getElementById('detail-modal');
+            const closeDetail = document.getElementById('close-detail');
+            const btnComplete = document.getElementById('btn-complete-project');
+            let currentDetailProject = null;
+
+            closeDetail.addEventListener('click', () => detailModal.hidden = true);
+            detailModal.addEventListener('click', (e) => { if (e.target === detailModal) detailModal.hidden = true; });
+
+            window.openDetailModal = async (projectId) => {
+                try {
+                    const project = await window.selectService.getProject(projectId);
+                    currentDetailProject = project;
+
+                    document.getElementById('detail-title').textContent = `Projekt: ${project.id.split('-')[0]}`; // Short ID
+                    document.getElementById('detail-email').textContent = project.email;
+                    document.getElementById('detail-package').textContent = `${project.packageSize} Bilder`;
+                    document.getElementById('detail-status').textContent = project.status;
+
+                    // Render Grid
+                    const grid = document.getElementById('detail-grid');
+                    grid.innerHTML = '';
+
+                    if (!project.selections || Object.keys(project.selections).length === 0) {
+                        grid.innerHTML = '<p style="color: #666;">Noch keine Auswahl getroffen.</p>';
+                    } else {
+                        // We need to find the asset URL for each selection ID
+                        // project.assets contains all images
+                        const selectionIds = Object.keys(project.selections);
+
+                        selectionIds.forEach(selId => {
+                            const asset = project.assets.find(a => a.id === selId);
+                            const options = project.selections[selId];
+
+                            const card = document.createElement('div');
+                            card.style.background = '#222';
+                            card.style.padding = '10px';
+                            card.style.borderRadius = '4px';
+
+                            // Image
+                            if (asset) {
+                                const img = document.createElement('img');
+                                img.src = asset.url;
+                                img.style.width = '100%';
+                                img.style.aspectRatio = '2/3';
+                                img.style.objectFit = 'cover';
+                                img.style.marginBottom = '10px';
+                                card.appendChild(img);
+                            }
+
+                            // ID
+                            const idLabel = document.createElement('div');
+                            idLabel.textContent = selId;
+                            idLabel.style.fontWeight = 'bold';
+                            idLabel.style.marginBottom = '5px';
+                            card.appendChild(idLabel);
+
+                            // Options
+                            if (options && options.length > 0) {
+                                options.forEach(opt => {
+                                    const tag = document.createElement('span');
+                                    tag.textContent = opt;
+                                    tag.style.display = 'inline-block';
+                                    tag.style.background = '#444';
+                                    tag.style.padding = '2px 6px';
+                                    tag.style.fontSize = '0.75rem';
+                                    tag.style.margin = '2px';
+                                    tag.style.borderRadius = '2px';
+                                    card.appendChild(tag);
+                                });
+                            } else {
+                                const none = document.createElement('div');
+                                none.textContent = 'Keine Retusche';
+                                none.style.fontSize = '0.8rem';
+                                none.style.color = '#666';
+                                card.appendChild(none);
+                            }
+
+                            grid.appendChild(card);
+                        });
+                    }
+
+                    // Finals Upload Logic
+                    const finalsDrop = document.getElementById('finals-drop-zone');
+                    const finalsInput = document.getElementById('finals-input');
+                    const finalsPreview = document.getElementById('finals-preview');
+                    let finalFiles = [];
+
+                    // Reset
+                    finalFiles = [];
+                    finalsPreview.innerHTML = '';
+                    btnComplete.disabled = true;
+                    btnComplete.textContent = 'Bilder hochladen & Abschließen';
+
+                    if (project.status === 'COMPLETED') {
+                        finalsDrop.style.display = 'none';
+                        btnComplete.disabled = true;
+                        btnComplete.textContent = 'Projekt Abgeschlossen';
+                    } else {
+                        finalsDrop.style.display = 'block';
+
+                        // Handlers
+                        finalsDrop.onclick = () => finalsInput.click();
+                        finalsInput.onchange = (e) => handleFinals(e.target.files);
+
+                        finalsDrop.ondragover = (e) => { e.preventDefault(); finalsDrop.style.borderColor = '#fff'; };
+                        finalsDrop.ondragleave = (e) => { e.preventDefault(); finalsDrop.style.borderColor = '#444'; };
+                        finalsDrop.ondrop = (e) => {
+                            e.preventDefault();
+                            finalsDrop.style.borderColor = '#444';
+                            handleFinals(e.dataTransfer.files);
+                        };
+
+                        function handleFinals(files) {
+                            if (files.length === 0) return;
+                            finalFiles = Array.from(files);
+
+                            finalsPreview.innerHTML = '';
+                            finalFiles.forEach(f => {
+                                const img = document.createElement('img');
+                                img.src = URL.createObjectURL(f);
+                                img.style.height = '100%';
+                                img.style.width = 'auto';
+                                img.style.borderRadius = '4px';
+                                finalsPreview.appendChild(img);
+                            });
+
+                            btnComplete.disabled = false;
+                            btnComplete.textContent = `Abschließen (${finalFiles.length} Bilder senden)`;
+                        }
+
+                        btnComplete.onclick = async () => {
+                            if (confirm('Bilder hochladen und Projekt abschließen? Der Kunde erhält den Download-Link.')) {
+                                try {
+                                    btnComplete.disabled = true;
+                                    btnComplete.textContent = 'Uploading...';
+
+                                    await window.selectService.completeProjectWithFinals(project.id, finalFiles);
+
+                                    alert('Erfolg! Projekt abgeschlossen.');
+                                    detailModal.hidden = true;
+                                    refreshList();
+                                } catch (err) {
+                                    alert('Fehler: ' + err.message);
+                                    btnComplete.disabled = false;
+                                }
+                            }
+                        };
+                    }
+
+                    detailModal.hidden = false;
+                    detailModal.style.display = 'flex'; // Restore flex for centering
+
+                } catch (e) {
+                    alert('Fehler beim Laden: ' + e.message);
+                }
+            };
+
+            // Create Handler
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('btn-create');
+                btn.disabled = true;
+                btn.textContent = 'UPLOADING TO CLOUD...';
+
+                try {
+                    const email = document.getElementById('client-email').value;
+
+                    // Simulate Network Delay for Upload
+                    await new Promise(r => setTimeout(r, 500));
+
+                    if (selectedFiles.length === 0) {
+                        throw new Error("Bitte mindestens ein Bild hochladen.");
+                    }
+
+                    const packageSize = document.getElementById('package-size').value;
+
+                    await window.selectService.createProject(email, packageSize, selectedFiles);
+
+                    form.reset();
+                    selectedFiles = [];
+                    previewArea.textContent = '';
+                    // Successful alert handled in service
+
+                    refreshList();
+                } catch (err) {
+                    alert('Fehler: ' + err.message);
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'PROJEKT ERSTELLEN & MAIL SENDEN';
+                }
+            });
+
+            // Global Resend Function
+            window.resendMail = async (projectId) => {
+                try {
+                    const project = await window.selectService.getProject(projectId);
+                    if (confirm(`E-Mail an ${project.email} erneut senden?`)) {
+                        await window.selectService.sendMail('UPLOAD_READY', project);
+                    }
+                } catch (e) {
+                    alert('Fehler: ' + e.message);
+                }
+            };
+
+            // Force Refresh on Load with explicit logging
+            console.log("Admin Loaded. Refreshing list...");
+            try {
+                await refreshList();
+                console.log("List Refreshed.");
+            } catch (error) {
+                console.error("Fatal Error refreshing list:", error);
+                document.getElementById('gallery-grid').innerHTML = `<p style="color:red; text-align:center;">Fehler beim Laden: ${error.message}</p>`;
+            }
+        });
+    </script>
 </body>
 
 </html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Studio | Photo Selection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="app-container">
+
+        <!-- Sidebar / Header on Mobile -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 style="font-size: 1.5rem;">SELECT STUDIO</h1>
+                <!-- Share Button for Sidebar (Mobile/Tablet) could go here but main header is better -->
+            </div>
+
+            <div class="package-selector">
+                <label for="package-select" class="label-small">PAKET GRÖSSE</label>
+                <div class="select-wrapper">
+                    <select id="package-select">
+                        <option value="5">Small (5 Bilder)</option>
+                        <option value="12" selected>Medium (12 Bilder)</option>
+                        <option value="20">Large (20 Bilder)</option>
+                    </select>
+                </div>
+                <p style="font-size: 0.8rem; color: #888; margin-top: 10px; line-height: 1.4;">
+                    Wähle die Anzahl der Bilder, die du bearbeiten lassen möchtest. Du kannst für jedes Bild
+                    individuelle Retusche-Optionen wählen oder unten eine gemeinsame Auswahl für alle treffen.
+                </p>
+            </div>
+
+            <div class="selection-summary">
+                <div class="counter-display">
+                    <span id="current-count">00</span>
+                    <span class="separator">/</span>
+                    <span id="max-count">12</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+
+                <button id="btn-bulk-retouch" class="btn-secondary"
+                    style="width:100%; margin-bottom: 10px; font-size: 0.8rem; display: none;">
+                    FÜR ALLE CHECKEN
+                </button>
+
+                <div class="selected-list" id="selected-list">
+                    <!-- Selected items will be injected here -->
+                    <div class="empty-state">Noch keine Bilder ausgewählt.</div>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <button id="submit-btn" class="btn-primary" disabled>SELECTION ABSENDEN</button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="gallery-top-bar">
+                <div class="gallery-info-bar">
+                    <span id="gallery-title-text" style="font-weight: 600;">Main Gallery</span>
+                </div>
+                <div class="gallery-actions">
+                    <button id="btn-share" class="btn-secondary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                            <polyline points="16 6 12 2 8 6"></polyline>
+                            <line x1="12" y1="2" x2="12" y2="15"></line>
+                        </svg>
+                        Teilen
+                    </button>
+                    <!-- Admin Links -->
+                    <a href="index.html" id="admin-link" class="btn-text"
+                        style="display:none; font-size:0.8rem;">Admin</a>
+                </div>
+            </header>
+
+            <div class="grid-container" id="photo-grid">
+                <!-- Grid items will be injected here via JS -->
+            </div>
+        </main>
+
+    </div>
+
+    <!-- Retouch Modal -->
+    <div class="modal-overlay" id="retouch-modal" hidden>
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2 id="modal-image-title">BILD #001</h2>
+                <button class="close-btn" id="modal-close">&times;</button>
+            </header>
+
+            <div class="modal-body">
+                <p class="modal-instruction">Wähle Retusche-Optionen (Optional):</p>
+                <form id="retouch-form" class="retouch-options">
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" name="retouch" value="Augenringe">
+                        <span class="custom-checkbox"></span>
+                        <span class="label-text">Augenringe entfernen</span>
+                    </label>
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" name="retouch" value="Zähne">
+                        <span class="custom-checkbox"></span>
+                        <span class="label-text">Zähne aufhellen</span>
+                    </label>
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" name="retouch" value="Reflexionen">
+                        <span class="custom-checkbox"></span>
+                        <span class="label-text">Brillen-Reflexionen</span>
+                    </label>
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" name="retouch" value="Haut">
+                        <span class="custom-checkbox"></span>
+                        <span class="label-text">Hautunreinheiten</span>
+                    </label>
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" name="retouch" value="Hintergrund">
+                        <span class="custom-checkbox"></span>
+                        <span class="label-text">Hintergrund Clean-up</span>
+                    </label>
+                </form>
+            </div>
+
+            <footer class="modal-footer" style="display: flex; justify-content: space-between;">
+                <button class="btn-text" id="modal-deselect" style="color: #ff4444;">BILD ABWÄHLEN</button>
+                <div>
+                    <button class="btn-text" id="modal-cancel">Abbrechen</button>
+                    <button class="btn-primary" id="modal-save">SPEICHERN & AUSWÄHLEN</button>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div class="modal-overlay" id="share-modal" hidden>
+        <div class="modal-content" style="max-width: 500px;">
+            <header class="modal-header">
+                <h2>Gallerie Teilen</h2>
+                <button class="close-btn" id="share-close">&times;</button>
+            </header>
+            <div class="modal-body" style="padding: 20px 0;">
+
+                <div style="margin-bottom: 20px;">
+                    <label class="label-small" style="display:block; margin-bottom: 8px;">Link zum Bearbeiten
+                        (Kunde)</label>
+                    <p style="font-size: 0.8rem; color: #888; margin-bottom: 8px;">Kunde kann Bilder auswählen und
+                        Favoriten markieren.</p>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="share-link-edit" readonly
+                            style="flex:1; background: #222; border: 1px solid #444; padding: 10px; color: #fff; border-radius: 4px;">
+                        <button class="btn-secondary" id="copy-edit">Kopieren</button>
+                    </div>
+                </div>
+
+                <div style="border-top: 1px solid #333; padding-top: 20px;">
+                    <label class="label-small" style="display:block; margin-bottom: 8px;">Link zum Anschauen
+                        (Read-Only)</label>
+                    <p style="font-size: 0.8rem; color: #888; margin-bottom: 8px;">Nur betrachten, keine Auswahl
+                        möglich.</p>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="share-link-view" readonly
+                            style="flex:1; background: #222; border: 1px solid #444; padding: 10px; color: #fff; border-radius: 4px;">
+                        <button class="btn-secondary" id="copy-view">Kopieren</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox" hidden>
+        <button id="lb-close" class="lb-close">&times;</button>
+        <button id="lb-prev" class="lb-nav lb-prev">&#10094;</button>
+        <button id="lb-next" class="lb-nav lb-next">&#10095;</button>
+
+        <div class="lb-content">
+            <img id="lb-img" src="" alt="">
+        </div>
+
+        <div class="lb-controls">
+            <!-- Optional: Selection/Favorite button in lightbox -->
+            <button id="lb-select-btn" class="btn-primary" style="padding: 8px 16px;">Auswählen</button>
+        </div>
+    </div>
+
+    <!-- Limit Warning Toast -->
+    <div id="toast" class="toast" hidden>
+        Paket-Limit erreicht. Bitte entferne ein Bild, um ein neues zu wählen.
+    </div>
+
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+
+    <script src="services.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

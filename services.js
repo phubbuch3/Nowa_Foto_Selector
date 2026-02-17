@@ -163,9 +163,11 @@ class SelectStudioService {
         // Ensure valid base URL for local or hosted
         // For local file://, this might be tricky, but we try to construct a relative link
         // In production, use your actual domain.
-        let baseUrl = window.location.href.split('?')[0];
-        if (baseUrl.includes('admin.html')) baseUrl = baseUrl.replace('admin.html', 'index.html');
-        // If it sends 'index.html', replace it.
+        // Helper to get the directory path and append customer.html
+        let currentUrl = window.location.href.split('?')[0];
+        // Strip the filename (e.g. index.html) to get the base directory
+        const basePath = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
+        let baseUrl = basePath + 'customer.html';
         const cleanBaseUrl = baseUrl;
 
         const link = `${cleanBaseUrl}?projectId=${project.id}`;
