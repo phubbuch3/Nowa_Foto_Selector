@@ -207,9 +207,9 @@ class SelectStudioService {
         }
 
         try {
-            // ⚠️ REPLACE WITH YOUR EMAILJS KEYS
-            const SERVICE_ID = "YOUR_SERVICE_ID";
-            const TEMPLATE_ID = "YOUR_TEMPLATE_ID";
+            // REPLACE WITH YOUR EMAILJS KEYS
+            const SERVICE_ID = "service_6rjou9e";
+            const TEMPLATE_ID = "template_ajae9qt";
 
             if (typeof emailjs === 'undefined') {
                 console.error("EmailJS SDK not loaded.");
