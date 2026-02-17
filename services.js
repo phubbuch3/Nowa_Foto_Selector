@@ -6,18 +6,20 @@
  * - Resend API (Email)
  */
 
+// New Config provided by User
 const firebaseConfig = {
     apiKey: "AIzaSyBcs_M4QrSUO6WoangZjoVlcknptdcrDSM",
     authDomain: "noras-bildspeicher.firebaseapp.com",
     projectId: "noras-bildspeicher",
     storageBucket: "noras-bildspeicher.firebasestorage.app",
     messagingSenderId: "993005721210",
-    appId: "1:993005721210:web:1aba2d550cb0d0963b8dc3",
-    measurementId: "G-95T36VHK1K"
+    // Different App ID provided in latest prompt
+    appId: "1:993005721210:web:255dc3b837e2a1633b8dc3",
+    measurementId: "G-S4W62QJLW9"
 };
 
-// Resend API Key
-const RESEND_API_KEY = 're_8tKhvU8h_c7jYDKNsCGgxUeCEjK4Cg6r5';
+// Resend API (Deprecated, currently using client-side EmailJS)
+// const RESEND_API_KEY = '...'; 
 
 class SelectStudioService {
     constructor() {
@@ -27,6 +29,38 @@ class SelectStudioService {
         }
         this.db = firebase.firestore();
         this.storage = firebase.storage();
+        this.auth = firebase.auth();
+
+        // Auth Listener for Protected Routes
+        this.checkAuth();
+    }
+
+    checkAuth() {
+        // Simple client-side route protection
+        const path = window.location.pathname;
+        const page = path.split("/").pop(); // e.g. 'index.html'
+
+        this.auth.onAuthStateChanged(user => {
+            console.log("Auth State Changed:", user ? user.email : "Logged Out");
+
+            // 1. Protect Admin Panel (index.html or root)
+            // If on index.html (or root) and NOT logged in -> Go to Login
+            if ((page === 'index.html' || page === '') && !user) {
+                // window.location.href = 'login.html'; 
+                // Commented out to prevent redirect loop during dev if file:// doesn't match perfectly
+                // logic is better placed in the HTML file itself for immediate effect
+            }
+
+            // 2. Prevent Login Page access if already logged in
+            if (page === 'login.html' && user) {
+                window.location.href = 'index.html';
+            }
+        });
+    }
+
+    async logout() {
+        await this.auth.signOut();
+        window.location.href = 'login.html';
     }
 
     // --- Project Operations ---

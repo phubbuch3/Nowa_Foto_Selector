@@ -380,17 +380,38 @@
 
     <!-- Firebase Compat SDKs (Safe for file:// usage) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
     <!-- Services -->
     <script src="services.js"></script>
     <script>
+        // Check Auth immediately
+        firebase.auth().onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = 'login.html';
+            } else {
+                // Show user email in header maybe?
+                console.log("Logged in as:", user.email);
+            }
+        });
+
         // Inline Admin Logic (Simple enough to keep here or move to admin.js)
         document.addEventListener('DOMContentLoaded', async () => {
             const form = document.getElementById('create-project-form');
             const listBody = null; // Removed table body reference
             const statTotal = document.getElementById('total-projects');
+
+            // Add Logout Button Logic
+            const header = document.querySelector('.dashboard-header');
+            const logoutBtn = document.createElement('button');
+            logoutBtn.textContent = 'ABMELDEN';
+            logoutBtn.className = 'btn-secondary';
+            logoutBtn.style.fontSize = '0.8rem';
+            logoutBtn.style.marginLeft = '20px';
+            logoutBtn.onclick = () => window.selectService.logout();
+            header.appendChild(logoutBtn);
 
             // Upload Logic
             const dropZone = document.getElementById('drop-zone');
