@@ -256,8 +256,11 @@ class SelectStudioService {
             // alert("E-Mail erfolgreich gesendet!"); // Optional feedback
         } catch (error) {
             console.error('❌ EmailJS Error:', error);
-            alert("Mail konnte nicht gesendet werden. (Hast du die Keys in services.js ersetzt?)");
-            // Fallback to mailto
+            // Show exact error to user
+            const errorText = error.text || error.message || JSON.stringify(error);
+            alert(`EmailJS Fehler (${error.status}):\n${errorText}\n\nBitte überprüfe Service ID, Template ID und Public Key.`);
+
+            // Fallback to mailto (still useful)
             window.open(`mailto:${templateParams.to_email}?subject=${encodeURIComponent(templateParams.subject)}&body=${encodeURIComponent(templateParams.message + "\n\nLink: " + templateParams.link_action)}`);
         }
     }
