@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const state = {
         projectId: null,
         project: null,
-        mode: 'edit', // 'edit' | 'view'
+        mode: 'edit', // 'edit' | 'view' | 'download'
         maxSelection: 12,
         currentAssets: [],
         selectedPhotos: new Map(), // Map<id, {options: []}>
@@ -74,37 +74,31 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Initializing Select Studio App...");
         const urlParams = new URLSearchParams(window.location.search);
         state.projectId = urlParams.get('projectId');
-        const viewMode = urlParams.get('view');
-
-        if (viewMode === 'true') {
-            state.mode = 'view';
-            document.body.classList.add('mode-view');
-        }
 
         if (!state.projectId) {
             document.body.innerHTML = '<div style="color:white; text-align:center; padding:50px;">Please provide a Project ID.</div>';
             return;
         }
 
-        // Check Admin Auth
-        firebase.auth().onAuthStateChanged(user => {
+        // Wait for Auth to determine view mode (Admin vs Customer)
+        firebase.auth().onAuthStateChanged(async (user) => {
             state.currentUser = user;
+
+            // Admin UI Elements
             if (user) {
                 console.log("Admin Logged In:", user.email);
-                // Show Admin Controls
                 if (elements.adminLink) elements.adminLink.style.display = 'inline-block';
                 if (elements.adminFab) elements.adminFab.hidden = false;
-
-                // Add Admin Badge to Title
-                if (elements.galleryTitle) {
-                    elements.galleryTitle.innerHTML += ' <span style="font-size:0.7rem; background:#fff; color:#000; padding:2px 4px; border-radius:4px; vertical-align:middle;">ADMIN</span>';
-                }
             } else {
                 console.log("Guest User (Customer)");
             }
-        });
 
-        // Load Project
+            // Load Project Data ONLY after Auth is known
+            await loadProjectData(user);
+        });
+    }
+
+    async function loadProjectData(user) {
         try {
             console.log("Fetching project...", state.projectId);
             const project = await window.selectService.getProject(state.projectId);
@@ -113,20 +107,63 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             state.project = project;
-            state.project = project;
 
+            // --- Status Logic ---
             if (project.status === 'COMPLETED') {
-                // --- View Mode: Finals Download ---
-                state.mode = 'download';
-                state.currentAssets = project.finalAssets || [];
-                state.maxSelection = 0; // Not relevant
+                if (user) {
+                    // --- Admin View ---
+                    state.mode = 'view';
+                    state.currentAssets = project.finalAssets || [];
 
-                // Adjust UI
-                if (elements.galleryTitle) elements.galleryTitle.textContent = "Deine fertigen Bilder ✨";
-                setupDownloadUI(project);
+                    if (elements.galleryTitle) {
+                        elements.galleryTitle.innerHTML = `Finale Bilder <span style="font-size:0.7rem; background:#fff; color:#000; padding:2px 4px; border-radius:4px; vertical-align:middle;">ADMIN</span>`;
+                    }
+
+                    // Add Toggle Button for Admin to switch to RAW
+                    const actions = document.querySelector('.gallery-actions');
+                    let toggleBtn = document.getElementById('admin-toggle-view');
+                    if (!toggleBtn && actions) {
+                        toggleBtn = document.createElement('button');
+                        toggleBtn.id = 'admin-toggle-view';
+                        toggleBtn.className = 'btn-secondary';
+                        toggleBtn.style.marginRight = '10px';
+                        toggleBtn.textContent = "Originale anzeigen";
+                        toggleBtn.onclick = () => {
+                            if (toggleBtn.textContent.includes("Originale")) {
+                                renderGrid(project.assets || []);
+                                toggleBtn.textContent = "Finale anzeigen";
+                                elements.galleryTitle.innerHTML = `Original Bilder <span style="font-size:0.7rem; background:#fff; color:#000; padding:2px 4px; border-radius:4px; vertical-align:middle;">ADMIN</span>`;
+                            } else {
+                                renderGrid(project.finalAssets || []);
+                                toggleBtn.textContent = "Originale anzeigen";
+                                elements.galleryTitle.innerHTML = `Finale Bilder <span style="font-size:0.7rem; background:#fff; color:#000; padding:2px 4px; border-radius:4px; vertical-align:middle;">ADMIN</span>`;
+                            }
+                        };
+                        actions.prepend(toggleBtn);
+                    }
+
+                    renderGrid(state.currentAssets);
+
+                } else {
+                    // --- Customer View: Finals Download ---
+                    state.mode = 'download';
+                    state.currentAssets = project.finalAssets || [];
+                    state.maxSelection = 0;
+
+                    if (elements.galleryTitle) elements.galleryTitle.textContent = "Deine fertigen Bilder ✨";
+                    setupDownloadUI(project);
+                    renderGrid(state.currentAssets);
+                }
             } else {
-                // --- View Mode: Selection ---
-                state.mode = (project.status === 'SELECTION') ? 'edit' : 'view';
+                // --- Normal Selection Flow ---
+                const viewMode = new URLSearchParams(window.location.search).get('view');
+                if (viewMode === 'true') {
+                    state.mode = 'view';
+                    document.body.classList.add('mode-view');
+                } else {
+                    state.mode = (project.status === 'SELECTION') ? 'edit' : 'view';
+                }
+
                 state.currentAssets = project.assets || [];
                 state.maxSelection = parseInt(project.packageSize) || 12;
 
@@ -135,9 +172,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Update UI Title
                 if (elements.galleryTitle) {
                     elements.galleryTitle.textContent = `Galerie: ${project.email}`;
+                    if (user) elements.galleryTitle.innerHTML += ' <span style="font-size:0.7rem; background:#fff; color:#000; padding:2px 4px; border-radius:4px; vertical-align:middle;">ADMIN</span>';
                 }
 
-                // Setup View/Edit State
                 if (state.mode === 'view') {
                     if (elements.submitBtn) elements.submitBtn.style.display = 'none';
                     if (elements.btnSaveDraft) elements.btnSaveDraft.style.display = 'none';
@@ -157,11 +194,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         state.selectedPhotos.set(key, { id: key, options: Array.isArray(opts) ? opts : [] });
                     });
                 }
+
+                renderGrid(state.currentAssets);
+                if (state.mode !== 'download') updateSummary();
             }
 
-            // Render
-            renderGrid(state.currentAssets);
-            if (state.mode !== 'download') updateSummary();
             setupEventListeners();
 
         } catch (e) {
@@ -384,6 +421,9 @@ document.addEventListener('DOMContentLoaded', () => {
             img.src = asset.url;
             img.loading = 'lazy';
 
+            // Cursor for clickable images
+            img.style.cursor = 'zoom-in';
+
             // Interaction: Click Image -> Lightbox
             img.onclick = (e) => {
                 e.stopPropagation();
@@ -391,11 +431,37 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             // Selection Indicators & Direct Toggle
-            const idBadge = document.createElement('div');
-            idBadge.className = 'photo-id-badge';
-            // User Requirement: "schön nummeriert", "nur eine nummerierung geben"
-            // Use Index + 1 for clean display regardless of internal ID
-            idBadge.textContent = `BILD #${String(index + 1).padStart(3, '0')}`;
+            // ONLY in Edit Mode
+            if (state.mode === 'edit' || (state.mode === 'view' && state.currentUser)) { // Admin sees details in view mode too?
+                const idBadge = document.createElement('div');
+                idBadge.className = 'photo-id-badge';
+                // User Requirement: "schön nummeriert", "nur eine nummerierung geben"
+                // Use Index + 1 for clean display regardless of internal ID
+                idBadge.textContent = `BILD #${String(index + 1).padStart(3, '0')}`;
+                card.append(idBadge);
+            }
+
+            // In Download Mode: Simple ID badge maybe?
+            if (state.mode === 'download') {
+                const idBadge = document.createElement('div');
+                idBadge.className = 'photo-id-badge';
+                idBadge.textContent = `FINAL #${String(index + 1).padStart(3, '0')}`;
+                card.append(idBadge);
+
+                // Add Download Button Overlay
+                const dlOverlay = document.createElement('div');
+                dlOverlay.style.position = 'absolute';
+                dlOverlay.style.bottom = '10px';
+                dlOverlay.style.right = '10px';
+                dlOverlay.style.background = 'rgba(0,0,0,0.7)';
+                dlOverlay.style.color = '#fff';
+                dlOverlay.style.padding = '5px 10px';
+                dlOverlay.style.borderRadius = '4px';
+                dlOverlay.style.fontSize = '0.8rem';
+                dlOverlay.style.pointerEvents = 'none'; // Click goes to lightbox, or stop propagation if button?
+                dlOverlay.textContent = 'Download';
+                card.append(dlOverlay);
+            }
 
             // Admin: Show Original Filename
             if (state.currentUser) {
@@ -405,54 +471,56 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.appendChild(adminLabel);
             }
 
-            // Selection Checkbox Overlay
-            const selectOverlay = document.createElement('div');
-            selectOverlay.className = 'select-overlay';
-            selectOverlay.style.position = 'absolute';
-            selectOverlay.style.top = '10px';
-            selectOverlay.style.right = '10px';
-            selectOverlay.style.zIndex = '5';
-            selectOverlay.style.cursor = 'pointer';
+            // Selection Checkbox Overlay (ONLY EDIT MODE)
+            if (state.mode === 'edit') {
+                const selectOverlay = document.createElement('div');
+                selectOverlay.className = 'select-overlay';
+                selectOverlay.style.position = 'absolute';
+                selectOverlay.style.top = '10px';
+                selectOverlay.style.right = '10px';
+                selectOverlay.style.zIndex = '5';
+                selectOverlay.style.cursor = 'pointer';
 
-            const isSelected = state.selectedPhotos.has(asset.id);
+                const isSelected = state.selectedPhotos.has(asset.id);
 
-            // Dynamic Checkbox State
-            const checkbox = document.createElement('div');
-            checkbox.className = 'check-indicator';
-            checkbox.innerHTML = '✓';
-            selectOverlay.appendChild(checkbox);
+                // Dynamic Checkbox State
+                const checkbox = document.createElement('div');
+                checkbox.className = 'check-indicator';
+                checkbox.innerHTML = '✓';
+                selectOverlay.appendChild(checkbox);
 
-            // Retouch Badge (New) - Moved creation here to be conditional
-            const retouchBadge = document.createElement('div');
-            retouchBadge.className = 'retouch-badge';
-            retouchBadge.textContent = 'RETOUCH';
+                // Retouch Badge (New) - Moved creation here to be conditional
+                const retouchBadge = document.createElement('div');
+                retouchBadge.className = 'retouch-badge';
+                retouchBadge.textContent = 'RETOUCH';
 
-            if (state.selectedPhotos.has(asset.id)) {
-                card.classList.add('selected');
-                const opts = state.selectedPhotos.get(asset.id).options;
-                if (opts && opts.length > 0) card.classList.add('has-retouch');
-            }
-
-            // Restore Click Handler
-            selectOverlay.onclick = (e) => {
-                e.stopPropagation();
-
-                // Requirement: Clicking the hook (haken) of a selected image should deselect it
                 if (state.selectedPhotos.has(asset.id)) {
-                    // Deselect
-                    state.selectedPhotos.delete(asset.id);
-                    updateUIForSelection(asset.id, false);
-                    updateSummary();
-                } else {
-                    // Select (Open Modal)
-                    handlePhotoSelection(asset.id);
+                    card.classList.add('selected');
+                    const opts = state.selectedPhotos.get(asset.id).options;
+                    if (opts && opts.length > 0) card.classList.add('has-retouch');
                 }
-            };
 
-            card.append(img, idBadge, selectOverlay);
-            // Append retouchBadge only if it has content or is needed
-            if (state.selectedPhotos.has(asset.id) && state.selectedPhotos.get(asset.id).options.length > 0) {
-                card.appendChild(retouchBadge);
+                // Restore Click Handler
+                selectOverlay.onclick = (e) => {
+                    e.stopPropagation();
+
+                    // Requirement: Clicking the hook (haken) of a selected image should deselect it
+                    if (state.selectedPhotos.has(asset.id)) {
+                        // Deselect
+                        state.selectedPhotos.delete(asset.id);
+                        updateUIForSelection(asset.id, false);
+                        updateSummary();
+                    } else {
+                        // Select (Open Modal)
+                        handlePhotoSelection(asset.id);
+                    }
+                };
+
+                card.append(selectOverlay);
+                // Append retouchBadge only if it has content or is needed
+                if (state.selectedPhotos.has(asset.id) && state.selectedPhotos.get(asset.id).options.length > 0) {
+                    card.appendChild(retouchBadge);
+                }
             }
 
             elements.photoGrid.appendChild(card);
@@ -506,6 +574,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const asset = state.currentAssets[state.lightboxIndex];
         if (!asset || !elements.lbSelectBtn) return;
 
+        // Final Download Mode
+        if (state.mode === 'download') {
+            elements.lbSelectBtn.textContent = "Herunterladen";
+            elements.lbSelectBtn.style.display = 'inline-block';
+            elements.lbSelectBtn.style.background = "var(--color-primary)";
+            elements.lbSelectBtn.style.color = "#fff";
+
+            // Clone to remove old listeners
+            const newBtn = elements.lbSelectBtn.cloneNode(true);
+            elements.lbSelectBtn.parentNode.replaceChild(newBtn, elements.lbSelectBtn);
+            elements.lbSelectBtn = newBtn;
+
+            elements.lbSelectBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Download Link
+                const link = document.createElement('a');
+                link.href = asset.url;
+                link.download = asset.name || `Final_${asset.id}.jpg`;
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+            return;
+        }
+
         // View Mode: Hide Select Button
         if (state.mode === 'view') {
             elements.lbSelectBtn.style.display = 'none';
@@ -526,7 +620,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Selection Logic ---
     function handlePhotoSelection(id) {
-        if (state.mode === 'view') return;
+        if (state.mode !== 'edit') return;
 
         if (state.selectedPhotos.has(id)) {
             // Already selected -> Edit
@@ -551,7 +645,10 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.modalSave.textContent = "FÜR ALLE ÜBERNEHMEN";
             elements.modalDeselect.style.visibility = 'hidden';
         } else {
-            elements.modalTitle.textContent = `BILD #${id.split('_')[1]}`;
+            // Safe split if id contains underscores
+            const parts = id.split('_');
+            const displayId = parts.length > 1 ? parts[1] : id;
+            elements.modalTitle.textContent = `BILD #${displayId}`;
 
             if (state.selectedPhotos.has(id)) {
                 // Pre-fill
@@ -725,12 +822,9 @@ function setupDownloadUI(project) {
                 
                 <div style="margin-top: 30px; font-size: 0.8rem; color: #888;">
                     Verfügbar bis:<br>
-                    <span style="color:#fff;">${new Date(project.expiresAt).toLocaleDateString('de-DE')}</span>
+                    <span style="color:#fff;">${project.expiresAt ? new Date(project.expiresAt).toLocaleDateString('de-DE') : 'Keine Angabe'}</span>
                 </div>
             </div>
         `;
     }
 }
-
-
-});
