@@ -210,6 +210,39 @@ class SelectStudioService {
         return project;
     }
 
+    async completeProjectWithFinals(projectId, files) {
+        // 1. Upload Finals
+        const finalAssets = await this.uploadFilesToCloud(files); // Reuse upload logic (might rename files though?)
+
+        // 2. Update Firestore
+        const snapshot = await this.db.collection('projects').where('id', '==', projectId).get();
+        if (snapshot.empty) throw new Error('Project not found');
+
+        const doc = snapshot.docs[0];
+
+        // Calculate Expiry (30 days)
+        const now = new Date();
+        const expiresAt = new Date(now);
+        expiresAt.setDate(now.getDate() + 30);
+
+        const updateData = {
+            status: 'COMPLETED',
+            finalAssets: finalAssets,
+            completedAt: now.toISOString(),
+            expiresAt: expiresAt.toISOString()
+        };
+
+        await doc.ref.update(updateData);
+
+        // 3. Trigger Mail
+        const project = doc.data(); // Old data
+        // Merge new data for mail context
+        Object.assign(project, updateData);
+
+        await this.sendMail('FINAL_DELIVERY', project);
+        return project;
+    }
+
     // --- Cloud Helpers ---
 
     async uploadFilesToCloud(files) {
@@ -288,7 +321,8 @@ class SelectStudioService {
         }
         else if (type === 'FINAL_DELIVERY') {
             templateParams.subject = "Deine fertigen Bilder sind da! ✨";
-            templateParams.message = `Die Bearbeitung ist abgeschlossen. Du kannst deine Bilder jetzt herunterladen.`;
+            // User Request: "bedanken das er NOWA Studio ausgewählt hat und viel spass mit den bildern"
+            templateParams.message = `Vielen Dank, dass du dich für NOWA Studio entschieden hast! Wir hoffen, du hast viel Freude mit deinen Bildern.\n\nDu kannst deine fertigen Aufnahmen unter folgendem Link ansehen und herunterladen (für 30 Tage verfügbar).`;
             templateParams.link_action = galleryUrl;
             templateParams.btn_text = "Bilder herunterladen";
         }
