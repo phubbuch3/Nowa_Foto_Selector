@@ -387,8 +387,12 @@
                     <div id="finals-preview"
                         style="display: flex; gap: 10px; overflow-x: auto; margin-bottom: 15px; height: 60px;"></div>
 
-                    <div style="text-align: right;">
-                        <button id="btn-complete-project" class="btn-primary" disabled>Bilder hochladen &
+                    <div style="text-align: right; display:flex; justify-content:space-between; align-items:center;">
+                        <button id="btn-delete-project" class="btn-text"
+                            style="color:var(--color-danger); font-size:0.8rem;">PROJEKT LÖSCHEN</button>
+
+                        <button id="btn-complete-project" class="btn-primary" disabled style="width:auto;">Bilder
+                            hochladen &
                             Abschließen</button>
                     </div>
                 </div>
@@ -693,6 +697,24 @@
                     finalsPreview.innerHTML = '';
                     btnComplete.disabled = true;
                     btnComplete.textContent = 'Bilder hochladen & Abschließen';
+
+                    // Delete Handler (Available for all statuses)
+                    const btnDelete = document.getElementById('btn-delete-project');
+                    if (btnDelete) {
+                        btnDelete.onclick = async () => {
+                            const confirmText = prompt(`Möchtest du das Projekt ${project.email} wirklich unwiderruflich LÖSCHEN?\n\nTippe "LÖSCHEN" zur Bestätigung:`);
+                            if (confirmText === 'LÖSCHEN') {
+                                try {
+                                    await window.selectService.deleteProject(project.id);
+                                    alert('Projekt gelöscht.');
+                                    detailModal.hidden = true;
+                                    refreshList();
+                                } catch (e) {
+                                    alert('Fehler beim Löschen: ' + e.message);
+                                }
+                            }
+                        };
+                    }
 
                     if (project.status === 'COMPLETED') {
                         finalsDrop.style.display = 'none';

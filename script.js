@@ -228,24 +228,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (elements.btnBulkRetouch) {
             elements.btnBulkRetouch.addEventListener('click', () => {
-                if (state.selectedPhotos.size > 0) {
-                    openSelectionModal('BULK');
-                } else {
-                    // Try to select ALL
-                    if (state.currentAssets.length <= state.maxSelection) {
-                        // Select ALL
-                        state.currentAssets.forEach(asset => {
-                            if (!state.selectedPhotos.has(asset.id)) {
-                                state.selectedPhotos.set(asset.id, { id: asset.id, options: [] });
-                                updateUIForSelection(asset.id, true);
-                            }
-                        });
-                        updateSummary();
-                        openSelectionModal('BULK');
-                    } else {
-                        alert(`Zu viele Bilder (${state.currentAssets.length}) für das Paket (${state.maxSelection}). Bitte triff erst eine Auswahl.`);
+                // Check if ALL assets can fit into package size
+                // Requirement: "immer egal auch wenn 0 1 oder alle bilder bereits ausgewählt sind"
+
+                // If package size is smaller than total assets, warn user?
+                // Or just apply retouch to existing selection?
+                // User said: "für alle bilder auf einmal" -> implies select ALL.
+
+                if (state.currentAssets.length > state.maxSelection) {
+                    if (!confirm(`Du hast ${state.currentAssets.length} Bilder, aber dein Paket umfasst nur ${state.maxSelection}. Die Retusche wird auf deine AKTUELLE Auswahl angewendet (oder die ersten ${state.maxSelection}, falls leer). Fortfahren?`)) {
+                        return;
                     }
                 }
+
+                openSelectionModal('BULK');
             });
         }
 
@@ -517,17 +513,37 @@ document.addEventListener('DOMContentLoaded', () => {
         const options = Array.from(checkboxes).map(cb => cb.value);
 
         if (activePhotoId === 'BULK') {
-            // Apply to all SELECTED photos
-            // Get current options
+            // Apply to ALL assets (as requested: "für alle bilder auf einmal")
+            // But we must respect the Package Limit!
+
+            let applyCount = 0;
             const newOptions = [...options];
 
-            state.selectedPhotos.forEach((val, key) => {
-                // Update the options for this selected photo
-                state.selectedPhotos.set(key, { id: key, options: newOptions });
-                // Update UI to show "Has Retouch" indicator if needed
-                updateUIForSelection(key, true);
+            state.currentAssets.forEach(asset => {
+                // Logic:
+                // 1. If already selected -> Update options
+                // 2. If NOT selected -> Select it & Update options (IF limit allows)
+
+                if (state.selectedPhotos.has(asset.id)) {
+                    state.selectedPhotos.set(asset.id, { id: asset.id, options: newOptions });
+                    updateUIForSelection(asset.id, true);
+                    applyCount++;
+                } else {
+                    // Not selected yet. Can we select more?
+                    if (state.selectedPhotos.size < state.maxSelection) {
+                        state.selectedPhotos.set(asset.id, { id: asset.id, options: newOptions });
+                        updateUIForSelection(asset.id, true);
+                        applyCount++;
+                    }
+                }
             });
-            alert(`Retusche-Optionen für alle ${state.selectedPhotos.size} ausgewählten Bilder aktualisiert.`);
+
+            if (applyCount < state.currentAssets.length && state.currentAssets.length > state.maxSelection) {
+                alert(`Retusche wurde auf ${applyCount} Bilder angewendet (Paketlimit: ${state.maxSelection}).`);
+            } else {
+                alert(`Retusche für alle Bilder übernommen!`);
+            }
+
         } else {
             // Single
             state.selectedPhotos.set(activePhotoId, { id: activePhotoId, options });
@@ -578,11 +594,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Bulk Button Logic
         if (elements.btnBulkRetouch) {
             elements.btnBulkRetouch.style.display = 'block';
-            if (count > 0) {
-                elements.btnBulkRetouch.textContent = `RETUSCHE FÜR ${count} AUSGEWÄHLTE SETZEN`;
-            } else {
-                elements.btnBulkRetouch.textContent = `ALLE ${state.currentAssets.length} BILDER WÄHLEN`;
-            }
+            elements.btnBulkRetouch.textContent = `FÜR ALLE BILDER ÜBERNEHMEN`;
         }
 
         // List

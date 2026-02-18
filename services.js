@@ -160,6 +160,18 @@ class SelectStudioService {
         return newAssets;
     }
 
+    async deleteProject(projectId) {
+        // Delete Firestore Doc
+        // Note: This does NOT delete files from Storage automatically (requires Cloud Functions or manual list)
+        // For simple usage, we just delete the doc reference.
+
+        const snapshot = await this.db.collection('projects').where('id', '==', projectId).get();
+        if (snapshot.empty) throw new Error('Project not found');
+
+        await snapshot.docs[0].ref.delete();
+        console.log("Project deleted:", projectId);
+    }
+
     // --- Selection Operations ---
 
     async submitSelection(projectId, selections) {
