@@ -674,3 +674,36 @@ select {
         gap: var(--space-xs);
     }
 }
+
+/* FAB for Admin Upload */
+.fab-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1000;
+}
+
+.fab-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #fff;
+    color: #000;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.fab-btn:hover {
+    transform: scale(1.1);
+    background-color: #f0f0f0;
+}
+
+.fab-btn svg {
+    width: 30px;
+    height: 30px;
+}
