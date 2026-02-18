@@ -211,8 +211,8 @@ class SelectStudioService {
     }
 
     async completeProjectWithFinals(projectId, files) {
-        // 1. Upload Finals
-        const finalAssets = await this.uploadFilesToCloud(files); // Reuse upload logic (might rename files though?)
+        // 1. Upload Finals to separate folder "processed"
+        const finalAssets = await this.uploadFilesToCloud(files, 'processed');
 
         // 2. Update Firestore
         const snapshot = await this.db.collection('projects').where('id', '==', projectId).get();
@@ -245,12 +245,12 @@ class SelectStudioService {
 
     // --- Cloud Helpers ---
 
-    async uploadFilesToCloud(files) {
+    async uploadFilesToCloud(files, folderName = 'projects') {
         if (!files || files.length === 0) return [];
 
         const assets = [];
         const uploadPromises = Array.from(files).map(async (file, index) => {
-            const fileName = `projects/${Date.now()}_${file.name}`;
+            const fileName = `${folderName}/${Date.now()}_${file.name}`;
             const storageRef = this.storage.ref().child(fileName);
 
             const snapshot = await storageRef.put(file);
