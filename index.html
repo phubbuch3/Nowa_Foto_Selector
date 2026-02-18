@@ -606,14 +606,71 @@
             if (fSort) fSort.addEventListener('change', refreshList);
 
 
+            // Helper: Download
+            async function forceDownload(url, filename) {
+                try {
+                    const res = await fetch(url);
+                    const blob = await res.blob();
+                    const blobUrl = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = blobUrl;
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(blobUrl);
+                } catch (e) {
+                    console.error("Force download failed, fallback to new tab", e);
+                    window.open(url, '_blank');
+                }
+            }
+
+            async function downloadSelection(project) {
+                if (!project.selections || Object.keys(project.selections).length === 0) {
+                    alert("Keine Bilder ausgewählt.");
+                    return;
+                }
+
+                if (!confirm(`Möchtest du alle ${Object.keys(project.selections).length} ausgewählten Bilder herunterladen?`)) return;
+
+                const selectionIds = Object.keys(project.selections);
+                for (let i = 0; i < selectionIds.length; i++) {
+                    const selId = selectionIds[i];
+                    const asset = project.assets.find(a => a.id === selId);
+                    if (asset) {
+                        // Build filename with options/notes if possible, or just ID
+                        const options = project.selections[selId];
+                        const suffix = (options && options.length > 0) ? `_RETOUCH` : '';
+                        const name = asset.name ? `Selected_${asset.name}` : `Selected_${selId}${suffix}.jpg`;
+
+                        await forceDownload(asset.url, name);
+                        // Delay
+                        await new Promise(r => setTimeout(r, 800));
+                    }
+                }
+            }
+
             // Modal Logic
             const detailModal = document.getElementById('detail-modal');
             const closeDetail = document.getElementById('close-detail');
             const btnComplete = document.getElementById('btn-complete-project');
             let currentDetailProject = null;
 
-            closeDetail.addEventListener('click', () => detailModal.hidden = true);
-            detailModal.addEventListener('click', (e) => { if (e.target === detailModal) detailModal.hidden = true; });
+            closeDetail.addEventListener('click', () => {
+                detailModal.hidden = true;
+                // Remove query param if present
+                const url = new URL(window.location);
+                url.searchParams.delete('projectId');
+                window.history.replaceState({}, '', url);
+            });
+            detailModal.addEventListener('click', (e) => {
+                if (e.target === detailModal) {
+                    detailModal.hidden = true;
+                    const url = new URL(window.location);
+                    url.searchParams.delete('projectId');
+                    window.history.replaceState({}, '', url);
+                }
+            });
 
             window.openDetailModal = async (projectId) => {
                 try {
@@ -628,6 +685,10 @@
                     // Render Grid
                     const grid = document.getElementById('detail-grid');
                     grid.innerHTML = '';
+
+                    // Remove old DL button if any
+                    const oldDlBtn = document.getElementById('btn-download-selection');
+                    if (oldDlBtn) oldDlBtn.remove();
 
                     if (!project.selections || Object.keys(project.selections).length === 0) {
                         grid.innerHTML = '<p style="color: #666;">Noch keine Auswahl getroffen.</p>';
@@ -658,7 +719,7 @@
 
                             // ID
                             const idLabel = document.createElement('div');
-                            idLabel.textContent = selId;
+                            idLabel.textContent = selId.replace('IMG_', 'BILD ');
                             idLabel.style.fontWeight = 'bold';
                             idLabel.style.marginBottom = '5px';
                             card.appendChild(idLabel);
@@ -686,6 +747,16 @@
 
                             grid.appendChild(card);
                         });
+
+                        // ADD DOWNLOAD BUTTON for Selection
+                        const dlBtn = document.createElement('button');
+                        dlBtn.id = 'btn-download-selection';
+                        dlBtn.className = 'btn-secondary';
+                        dlBtn.style.marginTop = '20px';
+                        dlBtn.textContent = `AUSWAHL HERUNTERLADEN (${selectionIds.length})`;
+                        dlBtn.onclick = () => downloadSelection(project);
+
+                        grid.parentNode.insertBefore(dlBtn, grid.nextSibling);
                     }
 
                     // Finals Upload Logic
