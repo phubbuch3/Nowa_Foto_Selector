@@ -205,10 +205,12 @@ class SelectStudioService {
         const galleryUrl = basePath + 'customer.html?projectId=' + project.id; // Customer View
 
         let templateParams = {
-            to_email: project.email,
-            to_name: project.email.split('@')[0],
+            // Updated to match your EmailJS Template variables {{email}}, {{name}}
+            email: project.email,
+            name: project.email.split('@')[0],
+
             project_id: project.id,
-            admin_email: "phubbuch3@gmail.com", // YOUR Email (Photographer)
+            admin_email: "phubbuch3@gmail.com",
             link_gallery: galleryUrl,
             link_admin: adminUrl,
             message: "",
@@ -226,8 +228,9 @@ class SelectStudioService {
         }
         else if (type === 'SELECTION_DONE') {
             // Switch recipient to Admin
-            templateParams.to_email = templateParams.admin_email;
-            templateParams.to_name = "Admin";
+            templateParams.email = templateParams.admin_email; // IMPORTANT: Overwrite 'email'
+            templateParams.name = "Admin";
+
             templateParams.subject = `Kunde ${project.email} hat ausgewählt ✅`;
             templateParams.message = `Der Kunde ${project.email} hat seine Foto- und Retusche-Auswahl getroffen (${Object.keys(project.selections).length} Bilder). Du kannst die Bilder über diesen Link herunterladen und bearbeiten.`;
             templateParams.link_action = adminUrl;
@@ -236,23 +239,17 @@ class SelectStudioService {
         else if (type === 'FINAL_DELIVERY') {
             templateParams.subject = "Deine fertigen Bilder sind da! ✨";
             templateParams.message = `Die Bearbeitung ist abgeschlossen. Du kannst deine Bilder jetzt herunterladen.`;
-            templateParams.link_action = galleryUrl; // Ideally this should be a direct download link or zip, but gallery view works
+            templateParams.link_action = galleryUrl;
             templateParams.btn_text = "Bilder herunterladen";
         }
 
         try {
-            // REPLACE WITH YOUR EMAILJS KEYS
+            // Explicitly pass Public Key as 3rd arg is params, 4th is UserID (Public Key)
+            const PUBLIC_KEY = "YVVauE5uaG-7fu5Wi";
+
             const SERVICE_ID = "service_6rjou9e";
             const TEMPLATE_ID = "template_ajae9qt";
 
-            if (typeof emailjs === 'undefined') {
-                console.error("EmailJS SDK not loaded.");
-                alert("EmailJS SDK fehlt. Bitte index.html prüfen.");
-                return;
-            }
-
-            // Explicitly pass Public Key as 3rd arg is params, 4th is UserID (Public Key)
-            const PUBLIC_KEY = "YVVauE5uaG-7fu5Wi";
             await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY);
             console.log('✅ Mail sent successfully via EmailJS');
             // alert("E-Mail erfolgreich gesendet!"); // Optional feedback
