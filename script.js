@@ -151,6 +151,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (actions) actions.prepend(toggleBtn);
 
+                    // NEW: Download All Button for Admin
+                    let dlAllBtn = document.getElementById('admin-dl-all');
+                    if (dlAllBtn) dlAllBtn.remove();
+
+                    dlAllBtn = document.createElement('button');
+                    dlAllBtn.id = 'admin-dl-all';
+                    dlAllBtn.className = 'btn-secondary';
+                    dlAllBtn.textContent = "Alle Herunterladen";
+                    dlAllBtn.onclick = () => downloadAllAssets();
+
+                    if (actions) actions.prepend(dlAllBtn); // Order: DL All, Toggle, Share
+
                     renderGrid(state.currentAssets, "FINAL");
 
                 } else {
@@ -391,6 +403,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- Download Logic ---
+    async function forceDownload(url, filename) {
+        try {
+            const res = await fetch(url);
+            const blob = await res.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
+        } catch (e) {
+            console.error("Force download failed, fallback to new tab", e);
+            window.open(url, '_blank');
+        }
+    }
+
+    async function downloadAllAssets() {
+        if (!confirm(`Möchtest du alle ${state.currentAssets.length} Bilder herunterladen? Dies kann einen Moment dauern.`)) return;
+
+        // Sequential download to avoid browser throttling
+        for (let i = 0; i < state.currentAssets.length; i++) {
+            const asset = state.currentAssets[i];
+            const name = asset.name || `Bild_${i + 1}.jpg`;
+            await forceDownload(asset.url, name);
+            // Small delay
+            await new Promise(r => setTimeout(r, 800));
+        }
+    }
+
     // --- Share Logic ---
     function openShareModal() {
         // Generate Links
@@ -468,8 +512,8 @@ document.addEventListener('DOMContentLoaded', () => {
             card.append(idBadge);
 
 
-            // In Download Mode: Simple ID badge maybe?
-            if (state.mode === 'download') {
+            // In Download Mode OR Final View (Admin)
+            if (state.mode === 'download' || labelPrefix === 'FINAL') {
                 // Add Download Button Overlay
                 const dlOverlay = document.createElement('div');
                 dlOverlay.style.position = 'absolute';
@@ -480,8 +524,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 dlOverlay.style.padding = '5px 10px';
                 dlOverlay.style.borderRadius = '4px';
                 dlOverlay.style.fontSize = '0.8rem';
-                dlOverlay.style.pointerEvents = 'none'; // Click goes to lightbox, or stop propagation if button?
-                dlOverlay.textContent = 'Download';
+                dlOverlay.style.cursor = 'pointer'; // Make it look clickable
+                dlOverlay.style.pointerEvents = 'auto'; // Ensure it receives clicks
+                dlOverlay.textContent = 'Herunterladen';
+
+                dlOverlay.onclick = (e) => {
+                    e.stopPropagation(); // Stop Lightbox
+                    forceDownload(asset.url, asset.name || `Final_${index + 1}.jpg`);
+                };
+
                 card.append(dlOverlay);
             }
 
@@ -846,7 +897,17 @@ function setupDownloadUI(project) {
                     Verfügbar bis:<br>
                     <span style="color:#fff;">${project.expiresAt ? new Date(project.expiresAt).toLocaleDateString('de-DE') : 'Keine Angabe'}</span>
                 </div>
+
+                <button id="btn-download-all" class="btn-primary" style="margin-top: 30px;">
+                    ALLE HERUNTERLADEN
+                </button>
             </div>
         `;
+
+        // Attach listener
+        const btnAll = document.getElementById('btn-download-all');
+        if (btnAll) {
+            btnAll.addEventListener('click', () => downloadAllAssets());
+        }
     }
 }
