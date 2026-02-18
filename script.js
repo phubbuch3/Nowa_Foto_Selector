@@ -444,6 +444,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 openLightbox(index);
             };
 
+            card.appendChild(img); // Fix: Append image to card
+
             // ID Badge Logic
             const idBadge = document.createElement('div');
             idBadge.className = 'photo-id-badge';
