@@ -213,8 +213,12 @@ class SelectStudioService {
             const snapshot = await storageRef.put(file);
             const downloadURL = await snapshot.ref.getDownloadURL();
 
+            // Fix: Use Timestamp to ensure unique IDs across multiple uploads
+            // Previous 'IMG_001' caused collisions and unwanted "auto-selection" of new files
+            const uniqueId = `IMG_${Date.now()}_${index}`; // e.g. IMG_1708250000_0
+
             return {
-                id: `IMG_${String(index + 1).padStart(3, '0')}`,
+                id: uniqueId,
                 url: downloadURL,
                 name: file.name,
                 type: 'RAW'
@@ -267,7 +271,9 @@ class SelectStudioService {
 
             templateParams.subject = `Kunde ${project.email} hat ausgewählt ✅`;
             templateParams.message = `Der Kunde ${project.email} hat seine Foto- und Retusche-Auswahl getroffen (${Object.keys(project.selections).length} Bilder). Du kannst die Bilder über diesen Link herunterladen und bearbeiten.`;
-            templateParams.link_action = adminUrl;
+
+            // Fix: Deep link to specific project in Admin Dashboard
+            templateParams.link_action = `${adminUrl}?projectId=${project.id}`;
             templateParams.btn_text = "Zur Bearbeitung (Admin)";
         }
         else if (type === 'FINAL_DELIVERY') {

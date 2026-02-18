@@ -832,6 +832,19 @@
             try {
                 await refreshList();
                 console.log("List Refreshed.");
+
+                // New: Check for Deep Link (e.g. from Email)
+                const urlParams = new URLSearchParams(window.location.search);
+                const deepLinkProjectId = urlParams.get('projectId');
+                if (deepLinkProjectId) {
+                    console.log("Opening Deep Link Project:", deepLinkProjectId);
+                    // Use small timeout to ensure DOM is ready? Not needed since we awaited refreshList
+                    window.openDetailModal(deepLinkProjectId);
+
+                    // Optional: Clear URL so refresh doesn't reopen it
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+
             } catch (error) {
                 console.error("Fatal Error refreshing list:", error);
                 document.getElementById('gallery-grid').innerHTML = `<p style="color:red; text-align:center;">Fehler beim Laden: ${error.message}</p>`;
