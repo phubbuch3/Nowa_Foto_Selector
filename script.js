@@ -122,27 +122,36 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Add Toggle Button for Admin to switch to RAW
                     const actions = document.querySelector('.gallery-actions');
                     let toggleBtn = document.getElementById('admin-toggle-view');
-                    if (!toggleBtn && actions) {
-                        toggleBtn = document.createElement('button');
-                        toggleBtn.id = 'admin-toggle-view';
-                        toggleBtn.className = 'btn-secondary';
-                        toggleBtn.style.marginRight = '10px';
-                        toggleBtn.textContent = "Originale anzeigen";
-                        toggleBtn.onclick = () => {
-                            if (toggleBtn.textContent.includes("Originale")) {
-                                renderGrid(project.assets || []);
-                                toggleBtn.textContent = "Finale anzeigen";
-                                elements.galleryTitle.innerHTML = `Original Bilder <span style="font-size:0.7rem; background:#fff; color:#000; padding:2px 4px; border-radius:4px; vertical-align:middle;">ADMIN</span>`;
-                            } else {
-                                renderGrid(project.finalAssets || []);
-                                toggleBtn.textContent = "Originale anzeigen";
-                                elements.galleryTitle.innerHTML = `Finale Bilder <span style="font-size:0.7rem; background:#fff; color:#000; padding:2px 4px; border-radius:4px; vertical-align:middle;">ADMIN</span>`;
-                            }
-                        };
-                        actions.prepend(toggleBtn);
-                    }
 
-                    renderGrid(state.currentAssets);
+                    // Remove existing if any (to prevent duplicates)
+                    if (toggleBtn) toggleBtn.remove();
+
+                    toggleBtn = document.createElement('button');
+                    toggleBtn.id = 'admin-toggle-view';
+                    toggleBtn.className = 'btn-secondary';
+                    toggleBtn.style.marginRight = '10px';
+                    toggleBtn.textContent = "Originale anzeigen";
+
+                    toggleBtn.onclick = () => {
+                        // Toggle Logic
+                        if (toggleBtn.textContent.includes("Originale")) {
+                            // Switch to Originals
+                            state.currentAssets = project.assets || [];
+                            renderGrid(state.currentAssets, "ORIGINAL");
+                            toggleBtn.textContent = "Finale anzeigen";
+                            elements.galleryTitle.innerHTML = `Original Bilder <span style="font-size:0.7rem; background:#fff; color:#000; padding:2px 4px; border-radius:4px; vertical-align:middle;">ADMIN</span>`;
+                        } else {
+                            // Switch to Finals
+                            state.currentAssets = project.finalAssets || [];
+                            renderGrid(state.currentAssets, "FINAL");
+                            toggleBtn.textContent = "Originale anzeigen";
+                            elements.galleryTitle.innerHTML = `Finale Bilder <span style="font-size:0.7rem; background:#fff; color:#000; padding:2px 4px; border-radius:4px; vertical-align:middle;">ADMIN</span>`;
+                        }
+                    };
+
+                    if (actions) actions.prepend(toggleBtn);
+
+                    renderGrid(state.currentAssets, "FINAL");
 
                 } else {
                     // --- Customer View: Finals Download ---
@@ -152,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (elements.galleryTitle) elements.galleryTitle.textContent = "Deine fertigen Bilder ✨";
                     setupDownloadUI(project);
-                    renderGrid(state.currentAssets);
+                    renderGrid(state.currentAssets, "FINAL");
                 }
             } else {
                 // --- Normal Selection Flow ---
@@ -195,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
 
-                renderGrid(state.currentAssets);
+                renderGrid(state.currentAssets, "BILD");
                 if (state.mode !== 'download') updateSummary();
             }
 
@@ -407,9 +416,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- Grid Rendering ---
-    function renderGrid(assets) {
+    function renderGrid(assets, labelPrefix = "BILD") {
         elements.photoGrid.innerHTML = '';
         state.currentAssets = assets; // sync
+
+        if (!assets || assets.length === 0) {
+            elements.photoGrid.innerHTML = '<div style="color:#888; padding:20px; text-align:center;">Keine Bilder vorhanden.</div>';
+            return;
+        }
 
         assets.forEach((asset, index) => {
             const card = document.createElement('div');
@@ -430,24 +444,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 openLightbox(index);
             };
 
-            // Selection Indicators & Direct Toggle
-            // ONLY in Edit Mode
-            if (state.mode === 'edit' || (state.mode === 'view' && state.currentUser)) { // Admin sees details in view mode too?
-                const idBadge = document.createElement('div');
-                idBadge.className = 'photo-id-badge';
-                // User Requirement: "schön nummeriert", "nur eine nummerierung geben"
-                // Use Index + 1 for clean display regardless of internal ID
-                idBadge.textContent = `BILD #${String(index + 1).padStart(3, '0')}`;
-                card.append(idBadge);
+            // ID Badge Logic
+            const idBadge = document.createElement('div');
+            idBadge.className = 'photo-id-badge';
+
+            // User Requirement: "schön nummeriert", "wieder bei 1 anfangen"
+            // Use Index + 1 for clean display regardless of internal ID logic
+            idBadge.textContent = `${labelPrefix} #${String(index + 1).padStart(3, '0')}`;
+
+            // Visual Distinction for Originals
+            if (labelPrefix === 'ORIGINAL') {
+                idBadge.style.color = '#ffaaaa';
+                idBadge.style.border = '1px solid #ffaaaa';
             }
+            // Visual Distinction for Finals
+            else if (labelPrefix === 'FINAL') {
+                idBadge.style.color = '#aaffaa';
+                idBadge.style.border = '1px solid #aaffaa';
+            }
+
+            card.append(idBadge);
+
 
             // In Download Mode: Simple ID badge maybe?
             if (state.mode === 'download') {
-                const idBadge = document.createElement('div');
-                idBadge.className = 'photo-id-badge';
-                idBadge.textContent = `FINAL #${String(index + 1).padStart(3, '0')}`;
-                card.append(idBadge);
-
                 // Add Download Button Overlay
                 const dlOverlay = document.createElement('div');
                 dlOverlay.style.position = 'absolute';
