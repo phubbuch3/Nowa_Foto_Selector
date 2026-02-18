@@ -794,7 +794,7 @@
                     await new Promise(r => setTimeout(r, 500));
 
                     if (selectedFiles.length === 0) {
-                        throw new Error("Bitte mindestens ein Bild hochladen.");
+                        if (!confirm("Keine Bilder ausgewählt. Leere Galerie erstellen?")) return;
                     }
 
                     const packageSize = document.getElementById('package-size').value;

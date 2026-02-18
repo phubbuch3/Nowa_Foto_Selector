@@ -378,7 +378,25 @@ document.addEventListener('DOMContentLoaded', () => {
             // Selection Indicators & Direct Toggle
             const idBadge = document.createElement('div');
             idBadge.className = 'photo-id-badge';
-            idBadge.textContent = asset.id.replace('IMG_', '');
+            // User Requirement: "schön nummeriert", "nur eine nummerierung geben"
+            // Use Index + 1 for clean display regardless of internal ID
+            idBadge.textContent = `BILD #${String(index + 1).padStart(3, '0')}`;
+
+            // Admin: Show Original Filename
+            if (state.currentUser) {
+                const adminLabel = document.createElement('div');
+                adminLabel.style.position = 'absolute';
+                adminLabel.style.bottom = '5px';
+                adminLabel.style.left = '5px';
+                adminLabel.style.background = 'rgba(0,0,0,0.7)';
+                adminLabel.style.color = '#fff';
+                adminLabel.style.fontSize = '0.6rem';
+                adminLabel.style.padding = '2px 4px';
+                adminLabel.style.borderRadius = '2px';
+                adminLabel.style.zIndex = '10';
+                adminLabel.textContent = asset.name || 'No Name';
+                card.appendChild(adminLabel);
+            }
 
             // Selection Checkbox Overlay
             const selectOverlay = document.createElement('div');
@@ -390,12 +408,18 @@ document.addEventListener('DOMContentLoaded', () => {
             selectOverlay.style.cursor = 'pointer';
 
             const isSelected = state.selectedPhotos.has(asset.id);
-            selectOverlay.innerHTML = `<div class="check-indicator">✓</div>`;
 
-            // Retouch Badge (New)
+            // Dynamic Checkbox State
+            const checkbox = document.createElement('div');
+            checkbox.className = 'check-indicator';
+            checkbox.innerHTML = '✓';
+            selectOverlay.appendChild(checkbox);
+
+            // Retouch Badge (New) - Moved creation here to be conditional
             const retouchBadge = document.createElement('div');
             retouchBadge.className = 'retouch-badge';
             retouchBadge.textContent = 'RETOUCH';
+
 
             if (state.selectedPhotos.has(asset.id)) {
                 card.classList.add('selected');
@@ -409,7 +433,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 handlePhotoSelection(asset.id);
             };
 
-            card.append(img, idBadge, selectOverlay, retouchBadge);
+            card.append(img, idBadge, selectOverlay);
+            // Append retouchBadge only if it has content or is needed
+            if (state.selectedPhotos.has(asset.id) && state.selectedPhotos.get(asset.id).options.length > 0) {
+                card.appendChild(retouchBadge);
+            }
+
             elements.photoGrid.appendChild(card);
         });
     }
@@ -620,7 +649,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Bulk Button Logic
         if (elements.btnBulkRetouch) {
             elements.btnBulkRetouch.style.display = 'block';
-            elements.btnBulkRetouch.textContent = `FÜR ALLE BILDER ÜBERNEHMEN`;
+            elements.btnBulkRetouch.textContent = `RETOUCHE FÜR ALLE BILDER ÜBERNEHMEN`;
         }
 
         // List
