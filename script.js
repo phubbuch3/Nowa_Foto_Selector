@@ -717,7 +717,36 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => elements.toast.hidden = true, 3000);
     }
 
+
     // Run
     init();
+
+}); // End DOMContentLoaded
+
+// --- Helper Functions outside ---
+
+function setupDownloadUI(project) {
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar) {
+        sidebar.innerHTML = `
+            <div class="sidebar-header">
+                <h1 style="font-size: 1.5rem;">SELECT STUDIO</h1>
+            </div>
+            <div style="padding: 20px;">
+                <h3 style="margin-bottom:10px;">Fertig! 🥳</h3>
+                <p style="font-size:0.9rem; color:#ccc; line-height:1.5;">
+                    Vielen Dank für dein Vertrauen.<br><br>
+                    Hier sind deine retuschierten Bilder. Du kannst sie einzeln herunterladen.
+                </p>
+                
+                <div style="margin-top: 30px; font-size: 0.8rem; color: #888;">
+                    Verfügbar bis:<br>
+                    <span style="color:#fff;">${new Date(project.expiresAt).toLocaleDateString('de-DE')}</span>
+                </div>
+            </div>
+        `;
+    }
+}
+
 
 });
