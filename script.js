@@ -458,12 +458,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const options = Array.from(checkboxes).map(cb => cb.value);
 
         if (activePhotoId === 'BULK') {
-            // Apply to all
+            // Apply to all SELECTED photos
+            // Get current options
+            const newOptions = [...options];
+
             state.selectedPhotos.forEach((val, key) => {
-                val.options = [...options]; // Copy
+                // Update the options for this selected photo
+                state.selectedPhotos.set(key, { id: key, options: newOptions });
+                // Update UI to show "Has Retouch" indicator if needed
                 updateUIForSelection(key, true);
             });
-            alert(`Retusche für ${state.selectedPhotos.size} Bilder aktualisiert.`);
+            alert(`Retusche-Optionen für alle ${state.selectedPhotos.size} ausgewählten Bilder aktualisiert.`);
         } else {
             // Single
             state.selectedPhotos.set(activePhotoId, { id: activePhotoId, options });
@@ -515,9 +520,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (elements.btnBulkRetouch) {
             elements.btnBulkRetouch.style.display = 'block';
             if (count > 0) {
-                elements.btnBulkRetouch.textContent = `RETUSCHE FÜR ${count} BILDER SETZEN`;
+                elements.btnBulkRetouch.textContent = `RETUSCHE FÜR ${count} AUSGEWÄHLTE SETZEN`;
             } else {
-                elements.btnBulkRetouch.textContent = `ALLE ${state.currentAssets.length} BILDER WÄHLEN & RETUSCHIEREN`;
+                elements.btnBulkRetouch.textContent = `ALLE ${state.currentAssets.length} BILDER WÄHLEN`;
             }
         }
 
