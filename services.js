@@ -174,28 +174,38 @@ class SelectStudioService {
 
     // --- Selection Operations ---
 
-    async submitSelection(projectId, selections) {
+    async submitSelection(projectId, selections, isFinal = true) {
         const snapshot = await this.db.collection('projects').where('id', '==', projectId).get();
         if (snapshot.empty) throw new Error('Project not found');
 
         const doc = snapshot.docs[0];
         const project = doc.data();
 
-        // Validation
-        const selectionCount = Object.keys(selections).length;
-        if (selectionCount > project.packageSize) {
-            throw new Error(`Limit überschritten. Max: ${project.packageSize}, Gewählt: ${selectionCount}`);
+        // Validation only for Final Submit
+        if (isFinal) {
+            const selectionCount = Object.keys(selections).length;
+            if (selectionCount > project.packageSize) {
+                throw new Error(`Limit überschritten. Max: ${project.packageSize}, Gewählt: ${selectionCount}`);
+            }
         }
 
-        // Update
-        await doc.ref.update({
-            selections: selections,
-            status: 'PROCESSING'
-        });
+        // Update Data
+        const updateData = {
+            selections: selections
+        };
 
-        // Trigger
-        project.selections = selections;
-        await this.sendMail('SELECTION_DONE', project);
+        // Update Status only if Final
+        if (isFinal) {
+            updateData.status = 'PROCESSING';
+        }
+
+        await doc.ref.update(updateData);
+
+        // Trigger Mail only if Final
+        if (isFinal) {
+            project.selections = selections;
+            await this.sendMail('SELECTION_DONE', project);
+        }
 
         return project;
     }

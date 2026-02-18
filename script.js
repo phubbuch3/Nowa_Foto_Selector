@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnBulkRetouch: document.getElementById('btn-bulk-retouch'),
         selectedList: document.getElementById('selected-list'),
         submitBtn: document.getElementById('submit-btn'),
+        btnSaveDraft: document.getElementById('btn-save-draft'), // New Button
         galleryTitle: document.getElementById('gallery-title-text'),
 
         // Header Actions
@@ -246,14 +247,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Submit
-        if (elements.submitBtn) {
-            elements.submitBtn.addEventListener('click', async () => {
+        // Save Draft
+        if (elements.btnSaveDraft) {
+            elements.btnSaveDraft.addEventListener('click', async () => {
                 if (state.mode === 'view') return;
                 try {
                     const selections = {};
                     state.selectedPhotos.forEach((val, key) => { selections[key] = val.options; });
-                    await window.selectService.submitSelection(state.projectId, selections);
-                    alert('Auswahl erfolgreich gespeichert!');
+
+                    // Pass false for Draft
+                    await window.selectService.submitSelection(state.projectId, selections, false);
+                    alert('Auswahl erfolgreich zwischengespeichert! Du kannst später weitermachen.');
+                } catch (e) {
+                    alert('Fehler: ' + e.message);
+                }
+            });
+        }
+
+        // Submit Final
+        if (elements.submitBtn) {
+            elements.submitBtn.addEventListener('click', async () => {
+                if (state.mode === 'view') return;
+                if (!confirm("Bist du sicher? Deine Auswahl wird final an den Fotografen gesendet und kann nicht mehr geändert werden.")) return;
+
+                try {
+                    const selections = {};
+                    state.selectedPhotos.forEach((val, key) => { selections[key] = val.options; });
+
+                    // Pass true for Final
+                    await window.selectService.submitSelection(state.projectId, selections, true);
+                    alert('Auswahl erfolgreich abgesendet! Vielen Dank.');
+                    // Optional: Reload or lock UI
+                    window.location.reload();
                 } catch (e) {
                     alert('Fehler: ' + e.message);
                 }
@@ -590,6 +615,7 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.progressFill.style.width = `${percent}%`;
 
         if (elements.submitBtn) elements.submitBtn.disabled = (count === 0);
+        if (elements.btnSaveDraft) elements.btnSaveDraft.disabled = (count === 0);
 
         // Bulk Button Logic
         if (elements.btnBulkRetouch) {
