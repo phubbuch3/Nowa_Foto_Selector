@@ -703,7 +703,24 @@ select {
     background-color: #f0f0f0;
 }
 
-.fab-btn svg {
-    width: 30px;
-    height: 30px;
+
+/* Admin Filename on Hover */
+.admin-filename {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    font-size: 0.6rem;
+    padding: 2px 4px;
+    border-radius: 2px;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    pointer-events: none;
+    /* Let clicks pass through */
+}
+
+.photo-card:hover .admin-filename {
+    opacity: 1;
 }
