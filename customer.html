@@ -206,6 +206,16 @@
         Paket-Limit erreicht. Bitte entferne ein Bild, um ein neues zu wählen.
     </div>
 
+    <!-- Admin: Add More Photos FAB -->
+    <div id="admin-upload-fab" class="fab-container" hidden>
+        <button id="btn-add-photos" class="fab-btn" title="Fotos hinzufügen (Admin)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M5 12h14"></path>
+            </svg>
+        </button>
+        <input type="file" id="admin-file-input" multiple accept="image/*" hidden>
+    </div>
+
     <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>

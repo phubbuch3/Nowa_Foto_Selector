@@ -11,18 +11,19 @@ document.addEventListener('DOMContentLoaded', () => {
         maxSelection: 12,
         currentAssets: [],
         selectedPhotos: new Map(), // Map<id, {options: []}>
-        lightboxIndex: -1
+        lightboxIndex: -1,
+        currentUser: null // Admin User
     };
 
     // --- DOM Elements ---
     const elements = {
-        // Sidebar / Info
+        // ... previous elements ...
         packageSelect: document.getElementById('package-select'),
         photoGrid: document.getElementById('photo-grid'),
         currentCount: document.getElementById('current-count'),
         maxCount: document.getElementById('max-count'),
         progressFill: document.getElementById('progress-fill'),
-        btnBulkRetouch: document.getElementById('btn-bulk-retouch'), // NEW
+        btnBulkRetouch: document.getElementById('btn-bulk-retouch'),
         selectedList: document.getElementById('selected-list'),
         submitBtn: document.getElementById('submit-btn'),
         galleryTitle: document.getElementById('gallery-title-text'),
@@ -30,6 +31,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Header Actions
         btnShare: document.getElementById('btn-share'),
         adminLink: document.getElementById('admin-link'),
+
+        // Admin FAB
+        adminFab: document.getElementById('admin-upload-fab'),
+        btnAddPhotos: document.getElementById('btn-add-photos'),
+        adminFileInput: document.getElementById('admin-file-input'),
 
         // Share Modal
         shareModal: document.getElementById('share-modal'),
@@ -75,12 +81,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (!state.projectId) {
-            // Check if we are photographer visiting index.html without ID -> Redirect to Admin? 
-            // Or just show 404.
-            // But maybe we handle "Demo" mode?
             document.body.innerHTML = '<div style="color:white; text-align:center; padding:50px;">Please provide a Project ID.</div>';
             return;
         }
+
+        // Check Admin Auth
+        firebase.auth().onAuthStateChanged(user => {
+            state.currentUser = user;
+            if (user) {
+                console.log("Admin Logged In:", user.email);
+                // Show Admin Controls
+                if (elements.adminLink) elements.adminLink.style.display = 'inline-block';
+                if (elements.adminFab) elements.adminFab.hidden = false;
+
+                // Add Admin Badge to Title
+                if (elements.galleryTitle) {
+                    elements.galleryTitle.innerHTML += ' <span style="font-size:0.7rem; background:#fff; color:#000; padding:2px 4px; border-radius:4px; vertical-align:middle;">ADMIN</span>';
+                }
+            } else {
+                console.log("Guest User (Customer)");
+            }
+        });
 
         // Load Project
         try {
@@ -94,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
             state.currentAssets = project.assets || [];
             state.maxSelection = parseInt(project.packageSize) || 12;
 
-            console.log("Project loaded:", project.email, "Assets:", state.currentAssets.length, "Mode:", state.mode);
+            console.log("Project loaded:", project.email);
 
             // Update UI Title
             if (elements.galleryTitle) {
@@ -103,18 +124,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Setup View/Edit State
             if (state.mode === 'view') {
-                // UI Cleanups for View Only
                 if (elements.submitBtn) elements.submitBtn.style.display = 'none';
                 if (elements.packageSelect) elements.packageSelect.disabled = true;
             } else {
-                // Edit Mode
-                // If package size is set in DB, enforce it in UI selector (or hide selector if fixed)
                 if (elements.packageSelect) {
                     elements.packageSelect.value = state.maxSelection;
-                    // If user is photographer (we don't have auth yet, but maybe check if coming from admin?)
-                    // For now, let's assume if you have the Edit Link, you can change package size? 
-                    // Requirement: "das auswählen der paketgrösse soll beim anlegen eines projektes definiert werden"
-                    // So we DISABLE the selector for the customer.
+                    // Disable for customer, but maybe enable for Admin?
+                    // letting it disabled for consistency for now
                     elements.packageSelect.disabled = true;
                 }
             }
@@ -131,7 +147,6 @@ document.addEventListener('DOMContentLoaded', () => {
             renderGrid(state.currentAssets);
             updateSummary();
             setupEventListeners();
-            console.log("App initialized successfully.");
 
         } catch (e) {
             console.error("Initialization Error:", e);
@@ -245,6 +260,50 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert('Auswahl erfolgreich gespeichert!');
                 } catch (e) {
                     alert('Fehler: ' + e.message);
+                }
+            });
+        }
+
+        // Admin FAB Upload
+        if (elements.btnAddPhotos && elements.adminFileInput) {
+            elements.btnAddPhotos.addEventListener('click', () => {
+                elements.adminFileInput.click();
+            });
+
+            elements.adminFileInput.addEventListener('change', async (e) => {
+                const files = e.target.files;
+                if (!files || files.length === 0) return;
+
+                if (!confirm(`${files.length} neue Bilder hinzufügen?`)) {
+                    elements.adminFileInput.value = ''; // Reset
+                    return;
+                }
+
+                try {
+                    // Show Loading State (Basic)
+                    const originalIcon = elements.btnAddPhotos.innerHTML;
+                    elements.btnAddPhotos.innerHTML = '<span style="font-size:12px;">...</span>';
+                    elements.btnAddPhotos.disabled = true;
+
+                    const newAssets = await window.selectService.addAssetsToProject(state.projectId, files);
+
+                    // Update State
+                    state.currentAssets = [...state.currentAssets, ...newAssets];
+
+                    // Re-render
+                    renderGrid(state.currentAssets);
+                    updateSummary(); // Just in case
+
+                    alert(`${newAssets.length} Bilder erfolgreich hinzugefügt!`);
+
+                    // Reset
+                    elements.adminFileInput.value = '';
+                } catch (error) {
+                    console.error("Upload Error:", error);
+                    alert("Fehler beim Hochladen: " + error.message);
+                } finally {
+                    elements.btnAddPhotos.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg>`;
+                    elements.btnAddPhotos.disabled = false;
                 }
             });
         }
