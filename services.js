@@ -351,7 +351,3 @@ class SelectStudioService {
 
 // Initialize Service
 window.selectService = new SelectStudioService();
-}
-
-// Export singleton
-window.selectService = new SelectStudioService();
