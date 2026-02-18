@@ -253,7 +253,14 @@ class SelectStudioService {
             const fileName = `${folderName}/${Date.now()}_${file.name}`;
             const storageRef = this.storage.ref().child(fileName);
 
-            const snapshot = await storageRef.put(file);
+            // Set Metadata to force Download when accessing URL directly
+            const metadata = {
+                contentType: file.type,
+                contentDisposition: `attachment; filename="${file.name}"`,
+                cacheControl: 'public, max-age=31536000'
+            };
+
+            const snapshot = await storageRef.put(file, metadata);
             const downloadURL = await snapshot.ref.getDownloadURL();
 
             // Fix: Use Timestamp to ensure unique IDs across multiple uploads
