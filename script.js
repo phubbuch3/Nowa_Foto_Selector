@@ -385,15 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Admin: Show Original Filename
             if (state.currentUser) {
                 const adminLabel = document.createElement('div');
-                adminLabel.style.position = 'absolute';
-                adminLabel.style.bottom = '5px';
-                adminLabel.style.left = '5px';
-                adminLabel.style.background = 'rgba(0,0,0,0.7)';
-                adminLabel.style.color = '#fff';
-                adminLabel.style.fontSize = '0.6rem';
-                adminLabel.style.padding = '2px 4px';
-                adminLabel.style.borderRadius = '2px';
-                adminLabel.style.zIndex = '10';
+                adminLabel.className = 'admin-filename';
                 adminLabel.textContent = asset.name || 'No Name';
                 card.appendChild(adminLabel);
             }
@@ -420,7 +412,6 @@ document.addEventListener('DOMContentLoaded', () => {
             retouchBadge.className = 'retouch-badge';
             retouchBadge.textContent = 'RETOUCH';
 
-
             if (state.selectedPhotos.has(asset.id)) {
                 card.classList.add('selected');
                 const opts = state.selectedPhotos.get(asset.id).options;
@@ -430,7 +421,17 @@ document.addEventListener('DOMContentLoaded', () => {
             // Restore Click Handler
             selectOverlay.onclick = (e) => {
                 e.stopPropagation();
-                handlePhotoSelection(asset.id);
+
+                // Requirement: Clicking the hook (haken) of a selected image should deselect it
+                if (state.selectedPhotos.has(asset.id)) {
+                    // Deselect
+                    state.selectedPhotos.delete(asset.id);
+                    updateUIForSelection(asset.id, false);
+                    updateSummary();
+                } else {
+                    // Select (Open Modal)
+                    handlePhotoSelection(asset.id);
+                }
             };
 
             card.append(img, idBadge, selectOverlay);
