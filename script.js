@@ -113,40 +113,55 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             state.project = project;
-            state.currentAssets = project.assets || [];
-            state.maxSelection = parseInt(project.packageSize) || 12;
+            state.project = project;
 
-            console.log("Project loaded:", project.email);
+            if (project.status === 'COMPLETED') {
+                // --- View Mode: Finals Download ---
+                state.mode = 'download';
+                state.currentAssets = project.finalAssets || [];
+                state.maxSelection = 0; // Not relevant
 
-            // Update UI Title
-            if (elements.galleryTitle) {
-                elements.galleryTitle.textContent = `Galerie: ${project.email}`;
-            }
-
-            // Setup View/Edit State
-            if (state.mode === 'view') {
-                if (elements.submitBtn) elements.submitBtn.style.display = 'none';
-                if (elements.packageSelect) elements.packageSelect.disabled = true;
+                // Adjust UI
+                if (elements.galleryTitle) elements.galleryTitle.textContent = "Deine fertigen Bilder ✨";
+                setupDownloadUI(project);
             } else {
-                if (elements.packageSelect) {
-                    elements.packageSelect.value = state.maxSelection;
-                    // Disable for customer, but maybe enable for Admin?
-                    // letting it disabled for consistency for now
-                    elements.packageSelect.disabled = true;
-                }
-            }
+                // --- View Mode: Selection ---
+                state.mode = (project.status === 'SELECTION') ? 'edit' : 'view';
+                state.currentAssets = project.assets || [];
+                state.maxSelection = parseInt(project.packageSize) || 12;
 
-            // Restore Selections
-            if (project.selections) {
-                Object.keys(project.selections).forEach(key => {
-                    const opts = project.selections[key];
-                    state.selectedPhotos.set(key, { id: key, options: Array.isArray(opts) ? opts : [] });
-                });
+                console.log("Project loaded:", project.email);
+
+                // Update UI Title
+                if (elements.galleryTitle) {
+                    elements.galleryTitle.textContent = `Galerie: ${project.email}`;
+                }
+
+                // Setup View/Edit State
+                if (state.mode === 'view') {
+                    if (elements.submitBtn) elements.submitBtn.style.display = 'none';
+                    if (elements.btnSaveDraft) elements.btnSaveDraft.style.display = 'none';
+                    if (elements.packageSelect) elements.packageSelect.disabled = true;
+                    document.body.classList.add('read-only');
+                } else {
+                    if (elements.packageSelect) {
+                        elements.packageSelect.value = state.maxSelection;
+                        elements.packageSelect.disabled = true;
+                    }
+                }
+
+                // Restore Selections
+                if (project.selections) {
+                    Object.keys(project.selections).forEach(key => {
+                        const opts = project.selections[key];
+                        state.selectedPhotos.set(key, { id: key, options: Array.isArray(opts) ? opts : [] });
+                    });
+                }
             }
 
             // Render
             renderGrid(state.currentAssets);
-            updateSummary();
+            if (state.mode !== 'download') updateSummary();
             setupEventListeners();
 
         } catch (e) {
@@ -177,12 +192,28 @@ document.addEventListener('DOMContentLoaded', () => {
         if (elements.lbClose) elements.lbClose.addEventListener('click', closeLightbox);
 
         // Background Close
-        if (elements.lightbox) {
-            elements.lightbox.addEventListener('click', (e) => {
-                if (e.target === elements.lightbox || e.target.classList.contains('lb-content')) {
-                    closeLightbox();
-                }
-            });
+
+        function setupDownloadUI(project) {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) {
+                sidebar.innerHTML = `
+            <div class="sidebar-header">
+                <h1 style="font-size: 1.5rem;">SELECT STUDIO</h1>
+            </div>
+            <div style="padding: 20px;">
+                <h3 style="margin-bottom:10px;">Fertig! 🥳</h3>
+                <p style="font-size:0.9rem; color:#ccc; line-height:1.5;">
+                    Vielen Dank für dein Vertrauen.<br><br>
+                    Hier sind deine retuschierten Bilder. Du kannst sie einzeln herunterladen.
+                </p>
+                
+                <div style="margin-top: 30px; font-size: 0.8rem; color: #888;">
+                    Verfügbar bis:<br>
+                    <span style="color:#fff;">${new Date(project.expiresAt).toLocaleDateString('de-DE')}</span>
+                </div>
+            </div>
+        `;
+            }
         }
 
         // Image Zoom Toggle
