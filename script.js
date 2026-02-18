@@ -426,10 +426,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!confirm(`Möchtest du alle ${state.currentAssets.length} Bilder als ZIP herunterladen? Dies kann einen Moment dauern.`)) return;
 
         const zip = new JSZip();
-        // folder name inside zip
-        const imgFolder = zip.folder(`Bilder_${state.projectId || 'Download'}`);
+        // Removed subfolder for easier access: const imgFolder = zip.folder(...);
 
-        // Show loading state?
         const originalText = document.getElementById('btn-download-all')?.textContent || document.getElementById('admin-dl-all')?.textContent;
         const btnAll = document.getElementById('btn-download-all') || document.getElementById('admin-dl-all');
         if (btnAll) {
@@ -439,26 +437,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             let processed = 0;
+            let successCount = 0;
             const total = state.currentAssets.length;
 
-            // Process in chunks of 5 to avoid network/memory choke
             const chunkSize = 5;
             for (let i = 0; i < total; i += chunkSize) {
                 const chunk = state.currentAssets.slice(i, i + chunkSize);
 
                 await Promise.all(chunk.map(async (asset, idx) => {
                     try {
-                        // Fetch Blob
-                        const response = await fetch(asset.url);
-                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        // Append timestamp to avoid cache-related CORS issues
+                        // Check if URL already has params (Firebase URLs usually do)
+                        const fetchUrl = asset.url + (asset.url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
+
+                        const response = await fetch(fetchUrl);
+                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
                         const blob = await response.blob();
 
-                        // Filename
                         const filename = asset.name || `Bild_${i + idx + 1}.jpg`;
-                        imgFolder.file(filename, blob);
+                        // Add to root of zip
+                        zip.file(filename, blob);
+                        successCount++;
 
                     } catch (e) {
-                        console.error("Failed to fetch asset for zip:", asset.url, e);
+                        console.error("ZIP: Failed to fetch", asset.name, e);
                     }
                 }));
 
@@ -466,13 +468,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (btnAll) btnAll.textContent = `ZIP wird erstellt... (${Math.round((processed / total) * 100)}%)`;
             }
 
+            if (successCount === 0) {
+                alert("Fehler: Keine Bilder konnten heruntergeladen werden. Möglicherweise blockiert der Browser oder die Firewall den Zugriff (CORS).");
+                return;
+            }
+
             if (btnAll) btnAll.textContent = "ZIP wird kompiliert...";
 
-            // Generate ZIP
             const content = await zip.generateAsync({ type: "blob" });
             const zipName = `Gallery_${state.projectId || 'Images'}.zip`;
 
-            // Download
             const link = document.createElement('a');
             link.href = window.URL.createObjectURL(content);
             link.download = zipName;
@@ -481,11 +486,9 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.removeChild(link);
             window.URL.revokeObjectURL(link.href);
 
-            alert("Download gestartet!");
-
         } catch (error) {
-            console.error("ZIP Error:", error);
-            alert("Fehler beim Erstellen der ZIP-Datei: " + error.message);
+            console.error("ZIP generation error:", error);
+            alert("Fehler ZIP: " + error.message);
         } finally {
             if (btnAll) {
                 btnAll.textContent = originalText || "ALLE HERUNTERLADEN";

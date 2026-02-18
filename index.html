@@ -647,12 +647,16 @@
                     const selectionIds = Object.keys(project.selections);
 
                     // Parallel Fetch (limit if needed, but for selection typical size ok)
+                    let successCount = 0;
                     await Promise.all(selectionIds.map(async (selId) => {
                         const asset = project.assets.find(a => a.id === selId);
                         if (!asset) return;
 
                         try {
-                            const res = await fetch(asset.url);
+                            // Cache busting
+                            const fetchUrl = asset.url + (asset.url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
+                            const res = await fetch(fetchUrl);
+                            if (!res.ok) throw new Error(`HTTP ${res.status}`);
                             const blob = await res.blob();
 
                             // Build Filename
@@ -662,10 +666,7 @@
                                 notes = "_RETOUCH-" + options.join("-");
                             }
 
-                            // Filename: ID + RetouchNotes + Extension
-                            // Clean up filename from path if needed
                             let cleanName = asset.name || `Img_${selId}.jpg`;
-                            // Inject retouch notes before extension if possible
                             const dotIndex = cleanName.lastIndexOf('.');
                             if (dotIndex !== -1 && notes) {
                                 cleanName = cleanName.substring(0, dotIndex) + notes + cleanName.substring(dotIndex);
@@ -674,10 +675,16 @@
                             }
 
                             folder.file(cleanName, blob);
+                            successCount++;
                         } catch (e) {
                             console.error("Failed to load asset for zip", selId, e);
                         }
                     }));
+
+                    if (successCount === 0) {
+                        alert("Konnte keine Bilder herunterladen (CORS/Netzwerk Fehler).");
+                        return;
+                    }
 
                     const content = await zip.generateAsync({ type: "blob" });
                     const link = document.createElement('a');
