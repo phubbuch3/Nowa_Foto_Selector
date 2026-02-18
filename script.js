@@ -925,6 +925,8 @@ document.addEventListener('DOMContentLoaded', () => {
         updateLightboxButton();
     };
 
+    window.downloadAllAssets = downloadAllAssets;
+
     function showToast() {
         elements.toast.hidden = false;
         setTimeout(() => elements.toast.hidden = true, 3000);
@@ -966,7 +968,7 @@ function setupDownloadUI(project) {
         // Attach listener
         const btnAll = document.getElementById('btn-download-all');
         if (btnAll) {
-            btnAll.addEventListener('click', () => downloadAllAssets());
+            btnAll.addEventListener('click', () => window.downloadAllAssets());
         }
     }
 }
