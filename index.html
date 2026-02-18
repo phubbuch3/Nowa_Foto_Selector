@@ -7,6 +7,7 @@
     <title>Select Studio | Admin Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script type="text/javascript">
         (function () {
             // Hi! Replace 'YOUR_PUBLIC_KEY' with your actual EmailJS Public Key from the dashboard.
@@ -631,21 +632,67 @@
                     return;
                 }
 
-                if (!confirm(`Möchtest du alle ${Object.keys(project.selections).length} ausgewählten Bilder herunterladen?`)) return;
+                if (!confirm(`Möchtest du alle ${Object.keys(project.selections).length} ausgewählten Bilder als ZIP herunterladen?`)) return;
 
-                const selectionIds = Object.keys(project.selections);
-                for (let i = 0; i < selectionIds.length; i++) {
-                    const selId = selectionIds[i];
-                    const asset = project.assets.find(a => a.id === selId);
-                    if (asset) {
-                        // Build filename with options/notes if possible, or just ID
-                        const options = project.selections[selId];
-                        const suffix = (options && options.length > 0) ? `_RETOUCH` : '';
-                        const name = asset.name ? `Selected_${asset.name}` : `Selected_${selId}${suffix}.jpg`;
+                const btn = document.getElementById('btn-download-selection');
+                const originalText = btn ? btn.textContent : "Laden...";
+                if (btn) {
+                    btn.textContent = "ZIP wird erstellt...";
+                    btn.disabled = true;
+                }
 
-                        await forceDownload(asset.url, name);
-                        // Delay
-                        await new Promise(r => setTimeout(r, 800));
+                try {
+                    const zip = new JSZip();
+                    const folder = zip.folder("Auswahl");
+                    const selectionIds = Object.keys(project.selections);
+
+                    // Parallel Fetch (limit if needed, but for selection typical size ok)
+                    await Promise.all(selectionIds.map(async (selId) => {
+                        const asset = project.assets.find(a => a.id === selId);
+                        if (!asset) return;
+
+                        try {
+                            const res = await fetch(asset.url);
+                            const blob = await res.blob();
+
+                            // Build Filename
+                            const options = project.selections[selId];
+                            let notes = "";
+                            if (options && options.length > 0) {
+                                notes = "_RETOUCH-" + options.join("-");
+                            }
+
+                            // Filename: ID + RetouchNotes + Extension
+                            // Clean up filename from path if needed
+                            let cleanName = asset.name || `Img_${selId}.jpg`;
+                            // Inject retouch notes before extension if possible
+                            const dotIndex = cleanName.lastIndexOf('.');
+                            if (dotIndex !== -1 && notes) {
+                                cleanName = cleanName.substring(0, dotIndex) + notes + cleanName.substring(dotIndex);
+                            } else if (notes) {
+                                cleanName += notes + ".jpg";
+                            }
+
+                            folder.file(cleanName, blob);
+                        } catch (e) {
+                            console.error("Failed to load asset for zip", selId, e);
+                        }
+                    }));
+
+                    const content = await zip.generateAsync({ type: "blob" });
+                    const link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(content);
+                    link.download = `Selection_${project.email}.zip`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                } catch (e) {
+                    alert("ZIP Fehler: " + e.message);
+                } finally {
+                    if (btn) {
+                        btn.textContent = originalText;
+                        btn.disabled = false;
                     }
                 }
             }
