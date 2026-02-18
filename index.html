@@ -244,14 +244,6 @@
 
         <header class="dashboard-header">
             <h1>Select Studio Cloud <span style="font-weight:300; opacity:0.5;">| Admin</span></h1>
-
-            <div class="dashboard-stats">
-                <div class="stat-card">
-                    <span class="stat-number" id="total-projects">0</span>
-                    <span class="stat-label">Projekte</span>
-                </div>
-                <!-- Add more stats later -->
-            </div>
         </header>
 
         <!-- Create Project -->
@@ -284,97 +276,105 @@
                 </div>
 
                 <button type="submit" id="btn-create" class="btn-primary"
-                    style="width: auto; min-width: 150px;">GALLERIE ERSTELLEN</button>
-    </div>
-    </form>
-    </section>
+                    style="width: auto; min-width: 150px;">GALLERIE ERSTELLEN & MAIL SENDEN</button>
+            </form>
+        </section>
 
-    <!-- Project Galleries -->
-    <section>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="font-weight: 400; margin: 0;">Meine Gallerien</h2>
-        </div>
+        <!-- Project Galleries -->
+        <section class="create-project-card"> <!-- Wrapped in Card for Padding & Width Alignment -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-weight: 400; margin: 0;">Meine Gallerien</h2>
 
-        <div class="filter-bar">
-            <input type="text" id="filter-search" placeholder="Suche nach E-Mail..."
-                style="background: var(--color-surface); border: 1px solid var(--color-border); padding: 8px; color: white;">
-
-            <select id="filter-status" class="filter-select">
-                <option value="ALL">Alle Status</option>
-                <option value="SELECTION">Auswahl offen</option>
-                <option value="PROCESSING">In Bearbeitung</option>
-                <option value="COMPLETED">Abgeschlossen</option>
-            </select>
-
-            <select id="sort-by" class="filter-select">
-                <option value="date-desc">Neueste zuerst</option>
-                <option value="date-asc">Älteste zuerst</option>
-                <option value="email-asc">E-Mail (A-Z)</option>
-            </select>
-        </div>
-
-        <div id="gallery-grid" class="gallery-grid">
-            <!-- Injected via JS -->
-        </div>
-
-        <p id="empty-msg" style="text-align: center; color: #666; display: none; margin-top: 40px;">
-            Keine Gallerien gefunden.
-        </p>
-    </section>
-
-    <!-- Project Detail Modal -->
-    <div id="detail-modal" class="modal-overlay" hidden
-        style="background: rgba(0,0,0,0.8); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: flex; align-items: center; justify-content: center;">
-        <div class="modal-content"
-            style="background: var(--color-surface); padding: 30px; border: 1px solid var(--color-border); max-width: 900px; width: 90%; max-height: 90vh; overflow-y: auto; position: relative;">
-            <button id="close-detail"
-                style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: #fff; font-size: 2rem; cursor: pointer;">&times;</button>
-
-            <h2 id="detail-title" style="margin-bottom: 20px;">Projekt Details</h2>
-
-            <div
-                style="margin-bottom: 30px; display: flex; gap: 40px; border-bottom: 1px solid #333; padding-bottom: 20px;">
-                <div>
-                    <span class="label-small">Kunde</span><br>
-                    <span id="detail-email" style="font-size: 1.2rem;">-</span>
-                </div>
-                <div>
-                    <span class="label-small">Paket</span><br>
-                    <span id="detail-package">-</span>
-                </div>
-                <div>
-                    <span class="label-small">Status</span><br>
-                    <span id="detail-status">-</span>
+                <!-- Moved Stats Here -->
+                <div class="dashboard-stats" style="gap:10px;">
+                    <div class="stat-card"
+                        style="padding: 8px 16px; background: transparent; border: 1px solid var(--color-border); display:flex; flex-direction:column; align-items:center;">
+                        <span class="stat-number" id="total-projects" style="line-height:1;">0</span>
+                        <span class="stat-label" style="font-size:0.6rem;">Projekte</span>
+                    </div>
                 </div>
             </div>
 
-            <h3 style="margin-bottom: 15px;">Ausgewählte Bilder</h3>
-            <div id="detail-grid"
-                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;">
-                <!-- Selections Injected Here -->
+            <div class="filter-bar">
+                <input type="text" id="filter-search" placeholder="Suche nach E-Mail..."
+                    style="background: var(--color-surface); border: 1px solid var(--color-border); padding: 8px; color: white;">
+
+                <select id="filter-status" class="filter-select">
+                    <option value="ALL">Alle Status</option>
+                    <option value="SELECTION">Auswahl offen</option>
+                    <option value="PROCESSING">In Bearbeitung</option>
+                    <option value="COMPLETED">Abgeschlossen</option>
+                </select>
+
+                <select id="sort-by" class="filter-select">
+                    <option value="date-desc">Neueste zuerst</option>
+                    <option value="date-asc">Älteste zuerst</option>
+                    <option value="email-asc">E-Mail (A-Z)</option>
+                </select>
             </div>
 
-            <div style="margin-top: 30px; border-top: 1px solid #333; padding-top: 20px;">
-                <h3 style="margin-bottom: 10px;">Finale Bilder hochladen</h3>
-                <p class="label-small" style="margin-bottom: 15px;">Lade die retuschierten Bilder hier hoch, um das
-                    Projekt abzuschließen und den Kunden zu benachrichtigen.</p>
+            <div id="gallery-grid" class="gallery-grid">
+                <!-- Injected via JS -->
+            </div>
 
-                <div id="finals-drop-zone"
-                    style="border: 2px dashed #444; padding: 20px; text-align: center; margin-bottom: 20px; cursor: pointer;">
-                    <span style="font-size: 1.5rem;">✨</span><br>
-                    <span style="color: #888;">Finale Bilder hier ablegen</span>
-                    <input type="file" id="finals-input" multiple accept="image/*" style="display: none;">
+            <p id="empty-msg" style="text-align: center; color: #666; display: none; margin-top: 40px;">
+                Keine Gallerien gefunden.
+            </p>
+        </section>
+
+        <!-- Project Detail Modal -->
+        <div id="detail-modal" class="modal-overlay" hidden
+            style="background: rgba(0,0,0,0.8); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: flex; align-items: center; justify-content: center;">
+            <div class="modal-content"
+                style="background: var(--color-surface); padding: 30px; border: 1px solid var(--color-border); max-width: 900px; width: 90%; max-height: 90vh; overflow-y: auto; position: relative;">
+                <button id="close-detail"
+                    style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: #fff; font-size: 2rem; cursor: pointer;">&times;</button>
+
+                <h2 id="detail-title" style="margin-bottom: 20px;">Projekt Details</h2>
+
+                <div
+                    style="margin-bottom: 30px; display: flex; gap: 40px; border-bottom: 1px solid #333; padding-bottom: 20px;">
+                    <div>
+                        <span class="label-small">Kunde</span><br>
+                        <span id="detail-email" style="font-size: 1.2rem;">-</span>
+                    </div>
+                    <div>
+                        <span class="label-small">Paket</span><br>
+                        <span id="detail-package">-</span>
+                    </div>
+                    <div>
+                        <span class="label-small">Status</span><br>
+                        <span id="detail-status">-</span>
+                    </div>
                 </div>
-                <div id="finals-preview"
-                    style="display: flex; gap: 10px; overflow-x: auto; margin-bottom: 15px; height: 60px;"></div>
 
-                <div style="text-align: right;">
-                    <button id="btn-complete-project" class="btn-primary" disabled>Bilder hochladen &
-                        Abschließen</button>
+                <h3 style="margin-bottom: 15px;">Ausgewählte Bilder</h3>
+                <div id="detail-grid"
+                    style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;">
+                    <!-- Selections Injected Here -->
+                </div>
+
+                <div style="margin-top: 30px; border-top: 1px solid #333; padding-top: 20px;">
+                    <h3 style="margin-bottom: 10px;">Finale Bilder hochladen</h3>
+                    <p class="label-small" style="margin-bottom: 15px;">Lade die retuschierten Bilder hier hoch, um das
+                        Projekt abzuschließen und den Kunden zu benachrichtigen.</p>
+
+                    <div id="finals-drop-zone"
+                        style="border: 2px dashed #444; padding: 20px; text-align: center; margin-bottom: 20px; cursor: pointer;">
+                        <span style="font-size: 1.5rem;">✨</span><br>
+                        <span style="color: #888;">Finale Bilder hier ablegen</span>
+                        <input type="file" id="finals-input" multiple accept="image/*" style="display: none;">
+                    </div>
+                    <div id="finals-preview"
+                        style="display: flex; gap: 10px; overflow-x: auto; margin-bottom: 15px; height: 60px;"></div>
+
+                    <div style="text-align: right;">
+                        <button id="btn-complete-project" class="btn-primary" disabled>Bilder hochladen &
+                            Abschließen</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
     </div>
 
