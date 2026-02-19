@@ -186,14 +186,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 state.currentAssets = project.assets || [];
-                state.maxSelection = parseInt(project.packageSize) || 12;
+                // IMPORTANT: project.packageSize is now the number of allowed retouches/Selections
+                // e.g. 0, 1, 2, 3, 4
+                state.maxSelection = parseInt(project.packageSize) || 0;
 
-                console.log("Project loaded:", project.email);
+                console.log("Project loaded:", project.email, "Max Selection:", state.maxSelection);
 
                 // Update UI Title
                 if (elements.galleryTitle) {
                     elements.galleryTitle.textContent = `Galerie: ${project.email}`;
                     if (user) elements.galleryTitle.innerHTML += ' <span style="font-size:0.7rem; background:#fff; color:#000; padding:2px 4px; border-radius:4px; vertical-align:middle;">ADMIN</span>';
+                }
+
+                // Update Element Texts
+                if (elements.maxCount) elements.maxCount.textContent = state.maxSelection;
+                if (state.maxSelection === 0) {
+                    // Special Case: 0 Retouches allowed (Basic Package)
+                    // Maybe show "View Only" or "Download Only"? 
+                    // User request: "0 retouche" -> implies they just get the pics or maybe they can't select any for retouch?
+                    // Assuming 0 means they can't select any.
+                    if (elements.submitBtn) {
+                        elements.submitBtn.style.display = 'none';
+                        if (document.getElementById('selected-list')) document.getElementById('selected-list').innerHTML = '<div style="padding:10px; color:#888;">Dieses Paket beinhaltet keine Retuschen.</div>';
+                    }
+                }
+
+                // Hide Bulk Retouch if max selection is small (logic change requested)
+                if (elements.btnBulkRetouch) {
+                    // User logic: "12 bilder paket -> 1 retouche". Bulk makes no sense for 1 image.
+                    elements.btnBulkRetouch.style.display = 'none';
                 }
 
                 if (state.mode === 'view') {

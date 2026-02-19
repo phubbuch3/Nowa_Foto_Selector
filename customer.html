@@ -27,21 +27,23 @@
         <aside class="sidebar">
             <div class="sidebar-header" style="display:flex; align-items:center; gap: 10px; margin-bottom: 20px;">
                 <h1 style="font-size: 1.5rem; font-weight: 300; letter-spacing: 2px;">SELECT</h1>
-                <img src="logo.svg" alt="NOWA Studio" style="height: 40px;">
+                <img src="logo.svg" alt="NOWA Studio" style="height: 24px;">
             </div>
 
             <div class="package-selector">
                 <label for="package-select" class="label-small">PAKET GRÖSSE</label>
                 <div class="select-wrapper">
-                    <select id="package-select">
-                        <option value="5">Small (5 Bilder)</option>
-                        <option value="12" selected>Medium (12 Bilder)</option>
-                        <option value="20">Large (20 Bilder)</option>
+                    <select id="package-select" disabled>
+                        <option value="0">Bewerbungsfoto Basic (0 Retuschen)</option>
+                        <option value="1">Bewerbungsfotos Standard (1 Retusche)</option>
+                        <option value="2">Bewerbungsfotos Advanced (2 Retuschen)</option>
+                        <option value="3">Bewerbungsfotos Premium (3 Retuschen)</option>
+                        <option value="4">Persönliche Portraits (4 Retuschen)</option>
                     </select>
                 </div>
                 <p style="font-size: 0.8rem; color: #888; margin-top: 10px; line-height: 1.4;">
-                    Wähle die Anzahl der Bilder, die du bearbeiten lassen möchtest. Du kannst für jedes Bild
-                    individuelle Retusche-Optionen wählen oder unten eine gemeinsame Auswahl für alle treffen.
+                    Dein Paket enthält eine fixe Anzahl an Retuschen (siehe oben). Wähle deine Favoriten für die
+                    Bearbeitung aus.
                 </p>
             </div>
 
