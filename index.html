@@ -265,7 +265,11 @@
     <div class="admin-container">
 
         <header class="dashboard-header">
-            <h1>Select Studio Cloud <span style="font-weight:300; opacity:0.5;">| Admin</span></h1>
+            <div style="display:flex; align-items:center;">
+                <img src="logo.png" alt="NOWA Studio" style="height: 40px; margin-right: 15px;">
+                <h1 style="margin:0;">Select Studio Cloud <span style="font-weight:300; opacity:0.5;">| Admin</span>
+                </h1>
+            </div>
         </header>
 
         <!-- Create Project -->
@@ -563,10 +567,13 @@
                     card.className = 'gallery-card';
                     card.style.cursor = 'pointer';
 
-                    // Click handler
+                    // Click handler - OPEN GALLERY (Customer View with Admin Mode)
                     card.onclick = (e) => {
+                        // If clicking a button/link inside, don't trigger card click
                         if (e.target.closest('button') || e.target.closest('a')) return;
-                        openDetailModal(p.id);
+
+                        // New Behavior: Open Gallery instead of Detail Modal
+                        window.open(`customer.html?projectId=${p.id}`, '_blank');
                     };
 
                     card.innerHTML = `
@@ -579,6 +586,7 @@
                         <div class="gallery-info" style="padding:15px;">
                             <div class="gallery-header" style="margin-bottom:10px;">
                                 <h3 class="gallery-title" style="margin:0; font-size:1.1rem;">${email}</h3>
+
                                 <span class="gallery-date" style="font-size:0.8rem; color:#888;">${date}</span>
                             </div>
                             <div style="font-size: 0.85rem; color: #aaa; margin-bottom: 15px;">
