@@ -202,13 +202,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (elements.maxCount) elements.maxCount.textContent = state.maxSelection;
                 if (state.maxSelection === 0) {
                     // Special Case: 0 Retouches allowed (Basic Package)
-                    // Maybe show "View Only" or "Download Only"? 
-                    // User request: "0 retouche" -> implies they just get the pics or maybe they can't select any for retouch?
-                    // Assuming 0 means they can't select any.
-                    if (elements.submitBtn) {
-                        elements.submitBtn.style.display = 'none';
-                        if (document.getElementById('selected-list')) document.getElementById('selected-list').innerHTML = '<div style="padding:10px; color:#888;">Dieses Paket beinhaltet keine Retuschen.</div>';
-                    }
+                    // But maybe they still need to 'submit' that they have seen it?
+                    // Or if 0 retouches, they just download the raw files?
+                    // User request: "mann soll nur noch so viele bilder markieren wie retouchen man zur verfügung hat"
+                    // So if 0 -> 0 marks allowed.
+
+                    // Disable selection
+                    document.body.classList.add('no-selection');
+                    if (document.getElementById('selected-list')) document.getElementById('selected-list').innerHTML = '<div style="padding:10px; color:#888;">Keine Retuschen in diesem Paket enthalten.</div>';
                 }
 
                 // Hide Bulk Retouch if max selection is small (logic change requested)
@@ -321,24 +322,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        if (elements.btnBulkRetouch) {
-            elements.btnBulkRetouch.addEventListener('click', () => {
-                // Check if ALL assets can fit into package size
-                // Requirement: "immer egal auch wenn 0 1 oder alle bilder bereits ausgewählt sind"
+        // Bulk Retouch Removed per user request
 
-                // If package size is smaller than total assets, warn user?
-                // Or just apply retouch to existing selection?
-                // User said: "für alle bilder auf einmal" -> implies select ALL.
-
-                if (state.currentAssets.length > state.maxSelection) {
-                    if (!confirm(`Du hast ${state.currentAssets.length} Bilder, aber dein Paket umfasst nur ${state.maxSelection}. Die Retusche wird auf deine AKTUELLE Auswahl angewendet (oder die ersten ${state.maxSelection}, falls leer). Fortfahren?`)) {
-                        return;
-                    }
-                }
-
-                openSelectionModal('BULK');
-            });
-        }
 
         // Submit
         // Save Draft
