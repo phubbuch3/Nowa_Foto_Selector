@@ -283,10 +283,15 @@ class SelectStudioService {
     async sendMail(type, project) {
         console.log(`Sending Mail via EmailJS: ${type} for ${project.email}`);
 
-        // Base URL Logic (Auto-detect environment)
-        let currentUrl = window.location.href.split('?')[0];
-        // Strip the filename to get folder
-        const basePath = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
+        // Base URL Logic
+        let basePath;
+        if (window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1')) {
+            let currentUrl = window.location.href.split('?')[0];
+            basePath = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
+        } else {
+            // Force Production URL to avoid Vercel Preview links in emails
+            basePath = "https://nowa-foto-selector.vercel.app/";
+        }
 
         // Define clean entry points
         const adminUrl = basePath + 'index.html';          // Admin Dashboard
@@ -298,7 +303,7 @@ class SelectStudioService {
             name: project.email.split('@')[0],
 
             project_id: project.id,
-            admin_email: "phubbuch3@gmail.com",
+            admin_email: "phubbuch3@gmail.com, info@nowastudio.ch",
             link_gallery: galleryUrl,
             link_admin: adminUrl,
             message: "",
