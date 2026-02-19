@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100" width="300" height="100">
+  <style>
+    .nowa { font-family: 'Inter', sans-serif; font-weight: 900; font-size: 80px; fill: white; }
+    .studio { font-family: 'Inter', sans-serif; font-weight: 400; font-size: 24px; fill: white; letter-spacing: 12px; }
+  </style>
+  <text x="50%" y="65" text-anchor="middle" class="nowa">NOWA</text>
+  <text x="50%" y="95" text-anchor="middle" class="studio">STUDIO</text>
+</svg>
