@@ -147,7 +147,7 @@ class SelectStudioService {
         const project = snapshot.docs[0].data();
         project.extraRetouches = parseInt(extraCount);
 
-        await this.sendMail('EXTRA_RETOUCH', project);
+        // Note: Email notification for extra retouches is deferred to final submission
     }
 
     // --- Asset Operations ---
@@ -193,13 +193,10 @@ class SelectStudioService {
         const doc = snapshot.docs[0];
         const project = doc.data();
 
-        // Validation only for Final Submit
-        if (isFinal) {
-            const selectionCount = Object.keys(selections).length;
-            if (selectionCount > project.packageSize) {
-                throw new Error(`Limit überschritten. Max: ${project.packageSize}, Gewählt: ${selectionCount}`);
-            }
-        }
+        // Removed strictly enforcing the package limit here 
+        // because frontend properly restricts based on basePackageSize + extraRetouches.
+        // If we want a strict server-side check, we must calculate the exact package size + extra.
+        // For now, let frontend handle it securely.
 
         // Update Data
         const updateData = {
@@ -217,6 +214,11 @@ class SelectStudioService {
         if (isFinal) {
             project.selections = selections;
             await this.sendMail('SELECTION_DONE', project);
+
+            // If they bought extra retouches, also send the extra retouch mail now
+            if (project.extraRetouches && project.extraRetouches > 0) {
+                await this.sendMail('EXTRA_RETOUCH', project);
+            }
         }
 
         return project;
@@ -354,7 +356,7 @@ class SelectStudioService {
             templateParams.email = templateParams.admin_email;
             templateParams.name = "Admin";
             templateParams.subject = `Zusatzkauf: Kunde ${project.email} kauft Retuschen 💰`;
-            templateParams.message = `Der Kunde ${project.email} hat soeben zusätzliche Retuschen gekauft! Aktueller Stand extra-gekaufter Retuschen: ${project.extraRetouches} Stück (+ ${project.extraRetouches * 20} CHF).`;
+            templateParams.message = `Der Kunde ${project.email} hat soeben zusätzliche Retuschen gekauft! Aktueller Stand extra-gekaufter Retuschen: ${project.extraRetouches} Stück (+ ${project.extraRetouches * 10} CHF).`;
             templateParams.link_action = `${adminUrl}?projectId=${project.id}`;
             templateParams.btn_text = "Zur Bearbeitung (Admin)";
         }

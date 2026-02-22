@@ -333,23 +333,26 @@ select {
 
 /* Checkmark Overlay logic (CSS driven instead of inline JS) */
 .check-indicator {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.5);
-    border: 2px solid #fff;
+    background: rgba(0, 0, 0, 0.7);
+    border: 3px solid #fff;
     display: flex;
     align-items: center;
     justify-content: center;
     color: transparent;
     font-weight: bold;
+    font-size: 1.2rem;
     transition: all 0.2s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
 }
 
 .photo-card.selected .check-indicator {
     background: var(--color-accent);
     color: var(--color-bg);
     border-color: var(--color-accent);
+    box-shadow: 0 0 12px var(--color-accent);
 }
 
 /* Buttons */
@@ -725,6 +728,7 @@ select {
     pointer-events: none;
     opacity: 0.8;
 }
+
 .no-selection .photo-card img {
     cursor: default;
 }

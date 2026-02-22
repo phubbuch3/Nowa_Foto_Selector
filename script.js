@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (elements.btnBuyRetouch) {
             elements.btnBuyRetouch.addEventListener('click', async () => {
                 if (state.mode === 'view') return;
-                if (confirm("Möchtest du +1 zusätzliches Bild inklusive +1 Retusche für 20 CHF hinzufügen?")) {
+                if (confirm("Möchtest du +1 zusätzliches Bild inklusive +1 Retusche für 10 CHF hinzufügen?")) {
                     const originalText = elements.btnBuyRetouch.textContent;
                     elements.btnBuyRetouch.textContent = "LÄDT...";
                     elements.btnBuyRetouch.disabled = true;
@@ -888,7 +888,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (e.target.checked) {
                         if (otherUsed + currentlyChecked > state.maxRetouches) {
                             e.target.checked = false;
-                            alert(`Limit erreicht! Du hast in deinem Paket max. ${state.maxRetouches} Retuschen zur Verfügung.\n\nDu kannst unten links weitere Retuschen (+20 CHF) dazukaufen.`);
+                            alert(`Limit erreicht! Du hast in deinem Paket max. ${state.maxRetouches} Retuschen zur Verfügung.\n\nDu kannst unten links weitere Retuschen (+10 CHF) dazukaufen.`);
                         }
                     }
                     updateCounterDisplay(); // Update on change
