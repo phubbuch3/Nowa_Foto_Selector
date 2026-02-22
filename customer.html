@@ -27,7 +27,7 @@
         <aside class="sidebar">
             <div class="sidebar-header" style="display:flex; align-items:center; gap: 10px; margin-bottom: 20px;">
                 <h1 style="font-size: 1.5rem; font-weight: 300; letter-spacing: 2px;">SELECT</h1>
-                <img src="bilder/logo.jpeg" alt="NOWA Studio" style="height: 24px; mix-blend-mode: screen;">
+                <img src="bilder/logo.jpeg" alt="NOWA Studio" style="height: 28px; mix-blend-mode: screen;">
             </div>
 
             <div class="package-selector">
@@ -66,6 +66,16 @@
             </div>
 
             <div class="sidebar-footer" style="display:flex; flex-direction:column; gap:10px;">
+                <div id="buy-retouch-container"
+                    style="border-top: 1px solid var(--color-border); padding-top: 15px; margin-bottom: 5px;">
+                    <label class="label-small">Zusätzliche Optionen</label>
+                    <button class="btn-secondary" id="btn-buy-retouch"
+                        style="width: 100%; justify-content: center; font-size: 0.8rem; padding: 6px;">
+                        +1 Bild & Retusche (20 CHF)
+                    </button>
+                    <div style="font-size: 0.75rem; color: #888; text-align: center; margin-top: 5px;">Zusätzlich
+                        gekauft: <span id="extra-retouch-count" style="color:#fff; font-weight:bold;">0</span></div>
+                </div>
                 <button id="btn-save-draft" class="btn-secondary" style="width:100%;">Auswahl speichern</button>
                 <button id="submit-btn" class="btn-primary" disabled>Auswahl definitiv absenden</button>
             </div>

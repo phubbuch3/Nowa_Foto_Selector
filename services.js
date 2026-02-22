@@ -138,6 +138,18 @@ class SelectStudioService {
         await snapshot.docs[0].ref.update({ packageSize: parseInt(size) });
     }
 
+    async updateProjectExtraRetouches(id, extraCount) {
+        const snapshot = await this.db.collection('projects').where('id', '==', id).get();
+        if (snapshot.empty) throw new Error('Project not found');
+
+        await snapshot.docs[0].ref.update({ extraRetouches: parseInt(extraCount) });
+
+        const project = snapshot.docs[0].data();
+        project.extraRetouches = parseInt(extraCount);
+
+        await this.sendMail('EXTRA_RETOUCH', project);
+    }
+
     // --- Asset Operations ---
 
     async addAssetsToProject(projectId, files) {
@@ -337,6 +349,14 @@ class SelectStudioService {
             templateParams.message = `Vielen Dank, dass du dich für NOWA Studio entschieden hast! Wir hoffen, du hast viel Freude mit deinen Bildern.\n\nDu kannst deine fertigen Aufnahmen unter folgendem Link ansehen und herunterladen (für 30 Tage verfügbar).`;
             templateParams.link_action = galleryUrl;
             templateParams.btn_text = "Bilder herunterladen";
+        }
+        else if (type === 'EXTRA_RETOUCH') {
+            templateParams.email = templateParams.admin_email;
+            templateParams.name = "Admin";
+            templateParams.subject = `Zusatzkauf: Kunde ${project.email} kauft Retuschen 💰`;
+            templateParams.message = `Der Kunde ${project.email} hat soeben zusätzliche Retuschen gekauft! Aktueller Stand extra-gekaufter Retuschen: ${project.extraRetouches} Stück (+ ${project.extraRetouches * 20} CHF).`;
+            templateParams.link_action = `${adminUrl}?projectId=${project.id}`;
+            templateParams.btn_text = "Zur Bearbeitung (Admin)";
         }
 
         try {

@@ -27,6 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedList: document.getElementById('selected-list'),
         submitBtn: document.getElementById('submit-btn'),
         btnSaveDraft: document.getElementById('btn-save-draft'), // New Button
+        btnBuyRetouch: document.getElementById('btn-buy-retouch'),
+        extraRetouchCount: document.getElementById('extra-retouch-count'),
         galleryTitle: document.getElementById('gallery-title-text'),
 
         // Header Actions
@@ -186,9 +188,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 state.currentAssets = project.assets || [];
-                // IMPORTANT: project.packageSize is now the number of allowed retouches/Selections
-                // e.g. 0, 1, 2, 3, 4
-                state.maxSelection = parseInt(project.packageSize) || 0;
+
+                const packageLimits = {
+                    0: { images: 5, retouches: 0 },
+                    1: { images: 12, retouches: 1 },
+                    2: { images: 20, retouches: 2 },
+                    3: { images: 30, retouches: 3 },
+                    4: { images: 35, retouches: 4 }
+                };
+
+                let pkgIndex = parseInt(project.packageSize) || 0;
+                if (!packageLimits[pkgIndex]) pkgIndex = 0;
+
+                state.baseMaxImages = packageLimits[pkgIndex].images;
+                state.baseMaxRetouches = packageLimits[pkgIndex].retouches;
+                state.extraRetouches = project.extraRetouches || 0;
+
+                state.maxSelection = state.baseMaxImages + state.extraRetouches;
+                state.maxRetouches = state.baseMaxRetouches + state.extraRetouches;
+
+                if (elements.extraRetouchCount) elements.extraRetouchCount.textContent = state.extraRetouches;
 
                 console.log("Project loaded:", project.email, "Max Selection:", state.maxSelection);
 
@@ -324,6 +343,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Bulk Retouch Removed per user request
 
+
+        // Buy Extra Retouch
+        if (elements.btnBuyRetouch) {
+            elements.btnBuyRetouch.addEventListener('click', async () => {
+                if (state.mode === 'view') return;
+                if (confirm("Möchtest du +1 zusätzliches Bild inklusive +1 Retusche für 20 CHF hinzufügen?")) {
+                    const originalText = elements.btnBuyRetouch.textContent;
+                    elements.btnBuyRetouch.textContent = "LÄDT...";
+                    elements.btnBuyRetouch.disabled = true;
+
+                    try {
+                        state.extraRetouches++;
+                        await window.selectService.updateProjectExtraRetouches(state.projectId, state.extraRetouches);
+
+                        state.maxSelection = state.baseMaxImages + state.extraRetouches;
+                        state.maxRetouches = state.baseMaxRetouches + state.extraRetouches;
+                        if (elements.extraRetouchCount) elements.extraRetouchCount.textContent = state.extraRetouches;
+
+                        updateSummary();
+                        alert("Erfolgreich hinzugefügt! NOWA Studio wurde benachrichtigt.");
+                    } catch (e) {
+                        state.extraRetouches--;
+                        alert("Fehler beim Kauf: " + e.message);
+                    } finally {
+                        elements.btnBuyRetouch.textContent = originalText;
+                        elements.btnBuyRetouch.disabled = false;
+                    }
+                }
+            });
+        }
 
         // Submit
         // Save Draft
@@ -776,6 +825,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function getUsedRetouches(ignorePhotoId = null) {
+        let used = 0;
+        state.selectedPhotos.forEach((data, id) => {
+            if (id !== ignorePhotoId && data.options) {
+                used += data.options.length;
+            }
+        });
+        return used;
+    }
+
     function openSelectionModal(id) {
         activePhotoId = id;
         elements.retouchForm.reset(); // Reset first
@@ -804,6 +863,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 elements.modalSave.textContent = "SPEICHERN & AUSWÄHLEN";
                 elements.modalDeselect.style.visibility = 'hidden';
             }
+
+            // Limit checks for checkboxes
+            const checkboxes = elements.retouchForm.querySelectorAll('input');
+            checkboxes.forEach(cb => {
+                cb.onchange = (e) => {
+                    if (e.target.checked) {
+                        const currentlyChecked = elements.retouchForm.querySelectorAll('input:checked').length;
+                        const otherUsed = getUsedRetouches(activePhotoId);
+                        if (otherUsed + currentlyChecked > state.maxRetouches) {
+                            e.target.checked = false;
+                            alert(`Limit erreicht! Du hast in deinem Paket max. ${state.maxRetouches} Retuschen zur Verfügung.\n\nDu kannst unten links weitere Retuschen (+20 CHF) dazukaufen.`);
+                        }
+                    }
+                };
+            });
         }
 
         elements.modal.hidden = false;
