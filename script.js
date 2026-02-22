@@ -412,6 +412,32 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // Save Draft
+        if (elements.btnSaveDraft) {
+            elements.btnSaveDraft.addEventListener('click', async () => {
+                if (state.mode === 'view') return;
+                try {
+                    const selections = {};
+                    state.selectedPhotos.forEach((val, key) => { selections[key] = val.options; });
+
+                    const originalText = elements.btnSaveDraft.textContent;
+                    elements.btnSaveDraft.textContent = "SPEICHERT...";
+                    elements.btnSaveDraft.disabled = true;
+
+                    // Pass false for Draft
+                    await window.selectService.submitSelection(state.projectId, selections, false);
+                    alert('Auswahl erfolgreich zwischengespeichert! Du kannst später weitermachen.');
+
+                    elements.btnSaveDraft.textContent = originalText;
+                    elements.btnSaveDraft.disabled = false;
+                } catch (e) {
+                    alert('Fehler: ' + e.message);
+                    elements.btnSaveDraft.textContent = "Auswahl speichern";
+                    elements.btnSaveDraft.disabled = false;
+                }
+            });
+        }
+
         // Submit Final
         if (elements.submitBtn) {
             elements.submitBtn.addEventListener('click', async () => {
