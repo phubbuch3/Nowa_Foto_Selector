@@ -666,7 +666,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const selectOverlay = document.createElement('div');
                 selectOverlay.className = 'select-overlay';
                 selectOverlay.style.position = 'absolute';
-                selectOverlay.style.top = '10px';
+                selectOverlay.style.bottom = '10px';
                 selectOverlay.style.right = '10px';
                 selectOverlay.style.zIndex = '5';
                 selectOverlay.style.cursor = 'pointer';
@@ -676,7 +676,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Dynamic Checkbox State
                 const checkbox = document.createElement('div');
                 checkbox.className = 'check-indicator';
-                checkbox.innerHTML = '✓';
+                checkbox.innerHTML = isSelected ? 'Ausgewählt' : 'Retuschen auswählen';
                 selectOverlay.appendChild(checkbox);
 
                 // Retouch Badge (New) - Moved creation here to be conditional
@@ -910,6 +910,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const checkboxes = elements.retouchForm.querySelectorAll('input:checked');
         const options = Array.from(checkboxes).map(cb => cb.value);
 
+        if (options.length === 0 && activePhotoId !== 'BULK') {
+            alert('Bitte wähle mindestens eine Retusche aus. Ohne Retusche kann das Bild nicht ausgewählt werden.\n\nWenn du das Bild nicht mehr auswählen möchtest, klicke unten links auf "BILD ABWÄHLEN".');
+            return;
+        }
+
         if (activePhotoId === 'BULK') {
             // Apply to ALL assets (as requested: "für alle bilder auf einmal")
             // But we must respect the Package Limit!
@@ -962,8 +967,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateUIForSelection(id, isSelected) {
         const card = document.querySelector(`.photo-card[data-id="${id}"]`);
         if (card) {
+            const checkIndicator = card.querySelector('.check-indicator');
             if (isSelected) {
                 card.classList.add('selected');
+                if (checkIndicator) checkIndicator.innerHTML = 'Ausgewählt';
                 // check options
                 const data = state.selectedPhotos.get(id);
                 if (data && data.options && data.options.length > 0) {
@@ -974,6 +981,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 card.classList.remove('selected');
                 card.classList.remove('has-retouch');
+                if (checkIndicator) checkIndicator.innerHTML = 'Retuschen auswählen';
             }
         }
     }
