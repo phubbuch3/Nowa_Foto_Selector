@@ -866,16 +866,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Limit checks for checkboxes
             const checkboxes = elements.retouchForm.querySelectorAll('input');
+            const usedSpan = document.getElementById('retouch-used');
+            const maxSpan = document.getElementById('retouch-max');
+
+            const updateCounterDisplay = () => {
+                if (usedSpan && maxSpan) {
+                    const currentlyChecked = elements.retouchForm.querySelectorAll('input:checked').length;
+                    const otherUsed = getUsedRetouches(activePhotoId);
+                    usedSpan.textContent = otherUsed + currentlyChecked;
+                    maxSpan.textContent = state.maxRetouches;
+                }
+            };
+
+            updateCounterDisplay(); // Initial display call
+
             checkboxes.forEach(cb => {
                 cb.onchange = (e) => {
+                    const currentlyChecked = elements.retouchForm.querySelectorAll('input:checked').length;
+                    const otherUsed = getUsedRetouches(activePhotoId);
+
                     if (e.target.checked) {
-                        const currentlyChecked = elements.retouchForm.querySelectorAll('input:checked').length;
-                        const otherUsed = getUsedRetouches(activePhotoId);
                         if (otherUsed + currentlyChecked > state.maxRetouches) {
                             e.target.checked = false;
                             alert(`Limit erreicht! Du hast in deinem Paket max. ${state.maxRetouches} Retuschen zur Verfügung.\n\nDu kannst unten links weitere Retuschen (+20 CHF) dazukaufen.`);
                         }
                     }
+                    updateCounterDisplay(); // Update on change
                 };
             });
         }
