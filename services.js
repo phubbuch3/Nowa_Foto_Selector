@@ -313,9 +313,10 @@ class SelectStudioService {
         const galleryUrl = basePath + 'customer.html?projectId=' + project.id; // Customer View
 
         let templateParams = {
-            // Updated to match your EmailJS Template variables {{email}}, {{name}}
+            // Updated to match your EmailJS Template variables
             email: project.email,
-            name: project.customerName || project.email.split('@')[0],
+            to_name: project.customerName || project.email.split('@')[0],
+            name: project.customerName || project.email.split('@')[0], // Keeping this just in case other templates use it
 
             project_id: project.id,
             admin_email: "phubbuch3@gmail.com, info@nowastudio.ch",
@@ -338,6 +339,7 @@ class SelectStudioService {
         else if (type === 'SELECTION_DONE') {
             // Switch recipient to Admin
             templateParams.email = templateParams.admin_email; // IMPORTANT: Overwrite 'email'
+            templateParams.to_name = "Admin";
             templateParams.name = "Admin";
 
             templateParams.subject = `Kunde ${project.email} hat ausgewählt ✅`;
@@ -356,6 +358,7 @@ class SelectStudioService {
         }
         else if (type === 'EXTRA_RETOUCH') {
             templateParams.email = templateParams.admin_email;
+            templateParams.to_name = "Admin";
             templateParams.name = "Admin";
             templateParams.subject = `Zusatzkauf: Kunde ${project.email} kauft Retuschen 💰`;
             templateParams.message = `Der Kunde ${project.email} hat soeben zusätzliche Retuschen gekauft! Aktueller Stand extra-gekaufter Retuschen: ${project.extraRetouches} Stück (+ ${project.extraRetouches * 10} CHF).`;
