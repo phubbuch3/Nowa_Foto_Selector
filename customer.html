@@ -239,6 +239,54 @@
         <input type="file" id="admin-file-input" multiple accept="image/*" hidden>
     </div>
 
+    <!-- Checkout Modal -->
+    <div class="modal-overlay" id="checkout-modal" hidden>
+        <div class="modal-content" style="max-width: 450px; text-align: center; padding: 30px;">
+            <header class="modal-header" style="justify-content: center; margin-bottom: 5px;">
+                <h2 style="font-size: 1.5rem;">Zusatzkosten begleichen</h2>
+                <button class="close-btn" id="checkout-cancel"
+                    style="position: absolute; right: 20px; top: 20px;">&times;</button>
+            </header>
+
+            <div class="modal-body" style="padding-top: 10px;">
+                <p style="color: #aaa; font-size: 0.9rem; margin-bottom: 25px; line-height: 1.4;">
+                    Du hast <strong id="checkout-retouch-count" style="color: #fff;">0</strong> zusätzliche Retuschen
+                    ausgewählt.
+                    Bitte überweise den Betrag von <strong id="checkout-total-price"
+                        style="color: #fff; font-size: 1.1rem;">0 CHF</strong> via TWINT, um deine Auswahl final
+                    abzuschließen.
+                </p>
+
+                <div
+                    style="background: #fff; padding: 20px; border-radius: 12px; display: inline-block; margin-bottom: 20px;">
+                    <!-- Placeholder TWINT QR Code / Replace with your actual TWINT business QR -->
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/QR_code_for_mobile_English_Wikipedia.svg/1200px-QR_code_for_mobile_English_Wikipedia.svg.png"
+                        alt="TWINT QR Code"
+                        style="width: 200px; height: 200px; object-fit: contain; margin-bottom: 10px;">
+                    <p style="color: #000; font-weight: bold; margin: 0; font-size: 1.1rem;">TWINT an NOWA Studio</p>
+                    <p style="color: #666; font-size: 0.8rem; margin: 5px 0 0 0;">Nummer xyz (Alternativ)</p>
+                </div>
+
+                <div
+                    style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 25px; text-align: left;">
+                    <label class="checkbox-wrapper" style="margin: 0;">
+                        <input type="checkbox" id="checkout-confirm-check">
+                        <span class="custom-checkbox"></span>
+                        <span class="label-text" style="font-size: 0.85rem;">Ich habe den Betrag überwiesen oder werde
+                            dies sofort erledigen.</span>
+                    </label>
+                </div>
+
+                <div style="display: flex; gap: 10px; flex-direction: column;">
+                    <button class="btn-primary" id="checkout-submit"
+                        style="width: 100%; padding: 12px; font-size: 1rem;" disabled>Jetzt Zahlung bestätigen &
+                        Absenden</button>
+                    <button class="btn-text" id="checkout-back" style="width: 100%; color: #aaa;">Abbrechen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>

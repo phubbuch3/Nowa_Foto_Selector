@@ -412,22 +412,71 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Submit
-        // Save Draft
-        if (elements.btnSaveDraft) {
-            elements.btnSaveDraft.addEventListener('click', async () => {
+        // Submit Final
+        if (elements.submitBtn) {
+            elements.submitBtn.addEventListener('click', async () => {
                 if (state.mode === 'view') return;
-                try {
-                    const selections = {};
-                    state.selectedPhotos.forEach((val, key) => { selections[key] = val.options; });
 
-                    // Pass false for Draft
-                    await window.selectService.submitSelection(state.projectId, selections, false);
-                    alert('Auswahl erfolgreich zwischengespeichert! Du kannst später weitermachen.');
-                } catch (e) {
-                    alert('Fehler: ' + e.message);
+                // --- Checkout Workaround Intercept ---
+                if (state.extraRetouches > 0) {
+                    // Show Checkout Modal
+                    const checkoutModal = document.getElementById('checkout-modal');
+                    const checkoutCount = document.getElementById('checkout-retouch-count');
+                    const checkoutPrice = document.getElementById('checkout-total-price');
+                    const checkoutCheck = document.getElementById('checkout-confirm-check');
+                    const checkoutSubmit = document.getElementById('checkout-submit');
+                    const checkoutCancel = document.getElementById('checkout-cancel');
+                    const checkoutBack = document.getElementById('checkout-back');
+
+                    if (checkoutModal) {
+                        checkoutCount.textContent = state.extraRetouches;
+                        checkoutPrice.textContent = (state.extraRetouches * 10) + " CHF";
+                        checkoutCheck.checked = false;
+                        checkoutSubmit.disabled = true;
+
+                        checkoutCheck.onchange = (e) => {
+                            checkoutSubmit.disabled = !e.target.checked;
+                        };
+
+                        const closeModal = () => { checkoutModal.hidden = true; };
+                        checkoutCancel.onclick = closeModal;
+                        checkoutBack.onclick = closeModal;
+
+                        checkoutSubmit.onclick = async () => {
+                            checkoutSubmit.disabled = true;
+                            checkoutSubmit.textContent = "WIRD GESENDET...";
+                            await finalizeSubmission();
+                            closeModal();
+                        };
+
+                        checkoutModal.hidden = false;
+                        return; // Stop normal flow
+                    }
                 }
+
+                // Normal flow if no extra retouches bought
+                if (!confirm("Bist du sicher? Deine Auswahl wird final an den Fotografen gesendet und kann nicht mehr geändert werden.")) return;
+                await finalizeSubmission();
             });
+        }
+
+        async function finalizeSubmission() {
+            try {
+                const selections = {};
+                state.selectedPhotos.forEach((val, key) => { selections[key] = val.options; });
+
+                // Pass true for Final
+                await window.selectService.submitSelection(state.projectId, selections, true);
+                alert('Auswahl erfolgreich abgesendet! Vielen Dank.');
+                // Optional: Reload or lock UI
+                window.location.reload();
+            } catch (e) {
+                alert('Fehler: ' + e.message);
+                if (document.getElementById('checkout-submit')) {
+                    document.getElementById('checkout-submit').disabled = false;
+                    document.getElementById('checkout-submit').textContent = "Jetzt Zahlung bestätigen & Absenden";
+                }
+            }
         }
 
         // Submit Final
