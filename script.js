@@ -457,6 +457,35 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (checkoutModal) {
                         checkoutCount.textContent = state.extraRetouches;
                         checkoutPrice.textContent = (state.extraRetouches * 10) + " CHF";
+
+                        // Set email ref for IBAN transfer
+                        const refElement = document.getElementById('checkout-email-ref');
+                        if (refElement) refElement.textContent = state.project.customerName || state.project.email;
+
+                        // Payment Methods Logic
+                        const btnTwint = document.getElementById('btn-pay-twint');
+                        const btnIban = document.getElementById('btn-pay-iban');
+                        const sectionTwint = document.getElementById('payment-twint');
+                        const sectionIban = document.getElementById('payment-iban');
+
+                        if (btnTwint && btnIban) {
+                            btnTwint.onclick = () => {
+                                btnTwint.className = 'btn-primary';
+                                btnIban.className = 'btn-secondary';
+                                sectionTwint.style.display = 'inline-block';
+                                sectionIban.style.display = 'none';
+                            };
+                            btnIban.onclick = () => {
+                                btnIban.className = 'btn-primary';
+                                btnTwint.className = 'btn-secondary';
+                                sectionIban.style.display = 'block';
+                                sectionTwint.style.display = 'none';
+                            };
+
+                            // reset to Twint default
+                            btnTwint.onclick();
+                        }
+
                         checkoutCheck.checked = false;
                         checkoutSubmit.disabled = true;
 

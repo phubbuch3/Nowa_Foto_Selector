@@ -253,18 +253,56 @@
                     Du hast <strong id="checkout-retouch-count" style="color: #fff;">0</strong> zusätzliche Retuschen
                     ausgewählt.
                     Bitte überweise den Betrag von <strong id="checkout-total-price"
-                        style="color: #fff; font-size: 1.1rem;">0 CHF</strong> via TWINT, um deine Auswahl final
+                        style="color: #fff; font-size: 1.1rem;">0 CHF</strong>, um deine Auswahl final
                     abzuschließen.
                 </p>
 
-                <div
-                    style="background: #fff; padding: 20px; border-radius: 12px; display: inline-block; margin-bottom: 20px;">
+                <!-- Payment Method Toggle -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button class="btn-primary" id="btn-pay-twint" style="flex:1;">TWINT</button>
+                    <button class="btn-secondary" id="btn-pay-iban" style="flex:1;">Banküberweisung</button>
+                </div>
+
+                <!-- TWINT Section -->
+                <div id="payment-twint"
+                    style="background: #fff; padding: 20px; border-radius: 12px; display: inline-block; margin-bottom: 20px; width: 100%; box-sizing: border-box;">
                     <!-- Placeholder TWINT QR Code / Replace with your actual TWINT business QR -->
                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/QR_code_for_mobile_English_Wikipedia.svg/1200px-QR_code_for_mobile_English_Wikipedia.svg.png"
                         alt="TWINT QR Code"
                         style="width: 200px; height: 200px; object-fit: contain; margin-bottom: 10px;">
                     <p style="color: #000; font-weight: bold; margin: 0; font-size: 1.1rem;">TWINT an NOWA Studio</p>
                     <p style="color: #666; font-size: 0.8rem; margin: 5px 0 0 0;">Nummer xyz (Alternativ)</p>
+                </div>
+
+                <!-- IBAN Section -->
+                <div id="payment-iban"
+                    style="display: none; background: #222; padding: 20px; border-radius: 12px; border: 1px solid var(--color-border); margin-bottom: 20px; text-align: left;">
+                    <div
+                        style="background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/QR_code_for_mobile_English_Wikipedia.svg/1200px-QR_code_for_mobile_English_Wikipedia.svg.png"
+                            alt="IBAN QR Code" style="width: 150px; height: 150px; object-fit: contain;">
+                    </div>
+
+                    <label class="label-small" style="color: #888;">Empfänger</label>
+                    <p style="color: #fff; font-size: 1rem; margin-bottom: 15px; font-weight: bold;">NOWA Studio</p>
+
+                    <label class="label-small" style="color: #888;">IBAN</label>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <input type="text" value="CH12 3456 7890 1234 5678 9" id="checkout-iban-input" readonly
+                            style="flex: 1; background: transparent; border: 1px solid #444; color: #fff; padding: 8px; border-radius: 4px; font-family: monospace;">
+                    </div>
+
+                    <div
+                        style="background: rgba(255,170,0,0.1); border-left: 3px solid #ffaa00; padding: 10px; margin-top: 15px;">
+                        <span
+                            style="font-weight: bold; color: #ffaa00; font-size: 0.85rem; display: block; margin-bottom: 5px;">WICHTIG:
+                            Zahlungsmitteilung!</span>
+                        <p style="color: #bbb; font-size: 0.8rem; margin: 0; line-height: 1.4;">
+                            Bitte trage beim Bezahlen in der App zwingend deinen Namen, E-Mail-Adresse oder Projekt-ID
+                            (<span id="checkout-email-ref" style="color:#fff; font-weight:bold;"></span>) in das Feld
+                            "Mitteilung" ein, damit wir deine Zahlung zuordnen können!
+                        </p>
+                    </div>
                 </div>
 
                 <div
