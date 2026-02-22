@@ -68,7 +68,7 @@ class SelectStudioService {
     /**
      * Create a new Project with Real Cloud Upload
      */
-    async createProject(email, packageSize, files = []) {
+    async createProject(email, packageSize, files = [], customerName = "") {
         try {
             // 1. Upload Files to Firebase Storage
             const uploadedAssets = await this.uploadFilesToCloud(files);
@@ -77,6 +77,7 @@ class SelectStudioService {
             const newProject = {
                 id: crypto.randomUUID(), // Local ID (used for folder path)
                 email: email,
+                customerName: customerName,
                 packageSize: parseInt(packageSize) || 12, // Default to 12 if missing
                 status: 'SELECTION',
                 createdAt: new Date().toISOString(),
@@ -314,7 +315,7 @@ class SelectStudioService {
         let templateParams = {
             // Updated to match your EmailJS Template variables {{email}}, {{name}}
             email: project.email,
-            name: project.email.split('@')[0],
+            name: project.customerName || project.email.split('@')[0],
 
             project_id: project.id,
             admin_email: "phubbuch3@gmail.com, info@nowastudio.ch",

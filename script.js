@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Update UI Title
                 if (elements.galleryTitle) {
-                    elements.galleryTitle.textContent = `Galerie: ${project.email}`;
+                    elements.galleryTitle.textContent = `Galerie: ${project.customerName || project.email}`;
                     if (user) elements.galleryTitle.innerHTML += ' <span style="font-size:0.7rem; background:#fff; color:#000; padding:2px 4px; border-radius:4px; vertical-align:middle;">ADMIN</span>';
                 }
 

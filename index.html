@@ -290,6 +290,11 @@
 
             <form id="create-project-form">
                 <div class="input-group">
+                    <label class="label-small">Kunden Vorname</label>
+                    <input type="text" id="client-name" placeholder="Max" required>
+                </div>
+
+                <div class="input-group">
                     <label class="label-small">Kunden E-Mail</label>
                     <input type="email" id="client-email" placeholder="kunde@example.com" required>
                 </div>
@@ -589,7 +594,7 @@
                         </div>
                         <div class="gallery-info" style="padding:15px;">
                             <div class="gallery-header" style="margin-bottom:10px;">
-                                <h3 class="gallery-title" style="margin:0; font-size:1.1rem;">${email}</h3>
+                                <h3 class="gallery-title" style="margin:0; font-size:1.1rem;">${p.customerName ? p.customerName + ' (' + email + ')' : email}</h3>
 
                                 <span class="gallery-date" style="font-size:0.8rem; color:#888;">${date}</span>
                             </div>
@@ -928,6 +933,7 @@
 
                 try {
                     const email = document.getElementById('client-email').value;
+                    const customerName = document.getElementById('client-name').value;
 
                     // Simulate Network Delay for Upload
                     await new Promise(r => setTimeout(r, 500));
@@ -938,7 +944,7 @@
 
                     const packageSize = document.getElementById('package-size').value;
 
-                    await window.selectService.createProject(email, packageSize, selectedFiles);
+                    await window.selectService.createProject(email, packageSize, selectedFiles, customerName);
 
                     form.reset();
                     selectedFiles = [];
