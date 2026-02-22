@@ -479,26 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Submit Final
-        if (elements.submitBtn) {
-            elements.submitBtn.addEventListener('click', async () => {
-                if (state.mode === 'view') return;
-                if (!confirm("Bist du sicher? Deine Auswahl wird final an den Fotografen gesendet und kann nicht mehr geändert werden.")) return;
 
-                try {
-                    const selections = {};
-                    state.selectedPhotos.forEach((val, key) => { selections[key] = val.options; });
-
-                    // Pass true for Final
-                    await window.selectService.submitSelection(state.projectId, selections, true);
-                    alert('Auswahl erfolgreich abgesendet! Vielen Dank.');
-                    // Optional: Reload or lock UI
-                    window.location.reload();
-                } catch (e) {
-                    alert('Fehler: ' + e.message);
-                }
-            });
-        }
 
         // Admin FAB Upload
         if (elements.btnAddPhotos && elements.adminFileInput) {
