@@ -323,7 +323,8 @@ class SelectStudioService {
             message: "",
             subject: "",
             btn_text: "Ansehen",
-            link_action: galleryUrl
+            link_action: galleryUrl,
+            image_url: "https://nowa-foto-selector.vercel.app/bilder/logo.jpeg"
         };
 
         // Configure Message based on Type
