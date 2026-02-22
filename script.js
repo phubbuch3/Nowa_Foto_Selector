@@ -27,7 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedList: document.getElementById('selected-list'),
         submitBtn: document.getElementById('submit-btn'),
         btnSaveDraft: document.getElementById('btn-save-draft'), // New Button
-        btnBuyRetouch: document.getElementById('btn-buy-retouch'),
+        btnAddRetouch: document.getElementById('btn-add-retouch'),
+        btnRemoveRetouch: document.getElementById('btn-remove-retouch'),
         extraRetouchCount: document.getElementById('extra-retouch-count'),
         galleryTitle: document.getElementById('gallery-title-text'),
 
@@ -344,14 +345,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Bulk Retouch Removed per user request
 
 
-        // Buy Extra Retouch
-        if (elements.btnBuyRetouch) {
-            elements.btnBuyRetouch.addEventListener('click', async () => {
+        // Buy Extra Retouch Handlers
+        if (elements.btnAddRetouch) {
+            elements.btnAddRetouch.addEventListener('click', async () => {
                 if (state.mode === 'view') return;
                 if (confirm("Möchtest du +1 zusätzliches Bild inklusive +1 Retusche für 10 CHF hinzufügen?")) {
-                    const originalText = elements.btnBuyRetouch.textContent;
-                    elements.btnBuyRetouch.textContent = "LÄDT...";
-                    elements.btnBuyRetouch.disabled = true;
+                    const originalText = elements.btnAddRetouch.textContent;
+                    elements.btnAddRetouch.textContent = "…";
+                    elements.btnAddRetouch.disabled = true;
 
                     try {
                         state.extraRetouches++;
@@ -364,8 +365,48 @@ document.addEventListener('DOMContentLoaded', () => {
                         updateSummary();
                         alert("Erfolgreich hinzugefügt! NOWA Studio wird bei Klick auf 'Auswahl definitiv absenden' benachrichtigt.");
                     } catch (e) {
-                        elements.btnBuyRetouch.textContent = originalText;
-                        elements.btnBuyRetouch.disabled = false;
+                        state.extraRetouches--;
+                        alert("Fehler beim Kauf: " + e.message);
+                    } finally {
+                        elements.btnAddRetouch.textContent = originalText;
+                        elements.btnAddRetouch.disabled = false;
+                    }
+                }
+            });
+        }
+
+        if (elements.btnRemoveRetouch) {
+            elements.btnRemoveRetouch.addEventListener('click', async () => {
+                if (state.mode === 'view' || state.extraRetouches <= 0) return;
+
+                const totalUsedRetouches = getUsedRetouches(null);
+                const totalPhotosSelected = state.selectedPhotos.size;
+
+                if (state.baseMaxRetouches + state.extraRetouches - 1 < totalUsedRetouches || state.baseMaxImages + state.extraRetouches - 1 < totalPhotosSelected) {
+                    alert("Diese Retusche ist bereits in Benutzung.\\nBitte wähle zuerst eine Retusche oder ein Bild ab, bevor du die Option entfernst.");
+                    return;
+                }
+
+                if (confirm("Möchtest du -1 Retusche & Bild (10 CHF) entfernen?")) {
+                    const originalText = elements.btnRemoveRetouch.textContent;
+                    elements.btnRemoveRetouch.textContent = "…";
+                    elements.btnRemoveRetouch.disabled = true;
+
+                    try {
+                        state.extraRetouches--;
+                        await window.selectService.updateProjectExtraRetouches(state.projectId, state.extraRetouches);
+
+                        state.maxSelection = state.baseMaxImages + state.extraRetouches;
+                        state.maxRetouches = state.baseMaxRetouches + state.extraRetouches;
+                        if (elements.extraRetouchCount) elements.extraRetouchCount.textContent = state.extraRetouches;
+
+                        updateSummary();
+                    } catch (e) {
+                        state.extraRetouches++;
+                        alert("Fehler beim Entfernen: " + e.message);
+                    } finally {
+                        elements.btnRemoveRetouch.textContent = originalText;
+                        elements.btnRemoveRetouch.disabled = false;
                     }
                 }
             });
@@ -1021,6 +1062,19 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             elements.selectedList.appendChild(item);
         });
+
+        // Update Extra Retouch buttons state
+        if (elements.btnRemoveRetouch) {
+            if (state.extraRetouches <= 0) {
+                elements.btnRemoveRetouch.disabled = true;
+                elements.btnRemoveRetouch.style.background = '#333';
+                elements.btnRemoveRetouch.style.cursor = 'not-allowed';
+            } else {
+                elements.btnRemoveRetouch.disabled = false;
+                elements.btnRemoveRetouch.style.background = 'var(--color-text)'; // White
+                elements.btnRemoveRetouch.style.cursor = 'pointer';
+            }
+        }
     }
 
     // Expose for inline onclick

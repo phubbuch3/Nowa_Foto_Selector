@@ -68,13 +68,19 @@
             <div class="sidebar-footer" style="display:flex; flex-direction:column; gap:10px;">
                 <div id="buy-retouch-container"
                     style="border-top: 1px solid var(--color-border); padding-top: 15px; margin-bottom: 5px;">
-                    <label class="label-small">Zusätzliche Optionen</label>
-                    <button class="btn-secondary" id="btn-buy-retouch"
-                        style="width: 100%; justify-content: center; font-size: 0.8rem; padding: 6px;">
-                        +1 Bild & Retusche (10 CHF)
-                    </button>
-                    <div style="font-size: 0.75rem; color: #888; text-align: center; margin-top: 5px;">Zusätzlich
-                        gekauft: <span id="extra-retouch-count" style="color:#fff; font-weight:bold;">0</span></div>
+                    <label class="label-small"
+                        style="display: block; text-align: center; margin-bottom: 8px;">Zusätzliche Optionen (+10
+                        CHF/Stück)</label>
+                    <div
+                        style="display: flex; align-items: center; justify-content: space-between; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px; padding: 4px;">
+                        <button class="btn-text" id="btn-remove-retouch"
+                            style="padding: 0; font-size: 1.5rem; line-height: 1; color: var(--color-bg); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #333; border-radius: 4px; transition: background 0.2s;"
+                            disabled>-</button>
+                        <div style="font-size: 0.9rem; font-weight: bold;"><span id="extra-retouch-count"
+                                style="font-size: 1.1rem; margin-right: 4px;">0</span> x Retusche</div>
+                        <button class="btn-text" id="btn-add-retouch"
+                            style="padding: 0; font-size: 1.5rem; line-height: 1; color: var(--color-bg); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--color-text); border-radius: 4px; transition: background 0.2s;">+</button>
+                    </div>
                 </div>
                 <button id="btn-save-draft" class="btn-secondary" style="width:100%;">Auswahl speichern</button>
                 <button id="submit-btn" class="btn-primary" disabled>Auswahl definitiv absenden</button>
