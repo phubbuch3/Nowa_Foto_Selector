@@ -362,11 +362,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (elements.extraRetouchCount) elements.extraRetouchCount.textContent = state.extraRetouches;
 
                         updateSummary();
-                        alert("Erfolgreich hinzugefügt! NOWA Studio wurde benachrichtigt.");
+                        alert("Erfolgreich hinzugefügt! NOWA Studio wird bei Klick auf 'Auswahl definitiv absenden' benachrichtigt.");
                     } catch (e) {
-                        state.extraRetouches--;
-                        alert("Fehler beim Kauf: " + e.message);
-                    } finally {
                         elements.btnBuyRetouch.textContent = originalText;
                         elements.btnBuyRetouch.disabled = false;
                     }
