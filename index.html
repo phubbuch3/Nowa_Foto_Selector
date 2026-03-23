@@ -581,7 +581,7 @@
                         if (e.target.closest('button') || e.target.closest('a')) return;
 
                         // New Behavior: Open Gallery instead of Detail Modal
-                        window.open(`customer.html?projectId=${p.id}`, '_self');
+                        window.open(`customer.html?projectId=${p.id}`, '_blank');
                     };
 
                     card.innerHTML = `
