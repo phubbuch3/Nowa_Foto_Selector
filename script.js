@@ -1317,7 +1317,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // List
         elements.selectedList.innerHTML = '';
-        if (count === 0) {
+        if (retouchCount === 0) {
             elements.selectedList.innerHTML = '<div class="empty-state">Noch keine Bilder gewählt.</div>';
             return;
         }
