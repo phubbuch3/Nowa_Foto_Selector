@@ -242,6 +242,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (user) elements.galleryTitle.innerHTML += ' <span style="font-size:0.7rem; background:#fff; color:#000; padding:2px 4px; border-radius:4px; vertical-align:middle;">ADMIN</span>';
                 }
 
+                // Update Mobile Modal Info Text
+                if (elements.mobileRetouchImgCount) elements.mobileRetouchImgCount.textContent = state.baseMaxImages;
+                if (elements.mobileRetouchRetoucheCount) elements.mobileRetouchRetoucheCount.textContent = state.baseMaxRetouches;
+
                 // Update Element Texts
                 if (elements.maxCount) elements.maxCount.textContent = state.maxRetouches;
                 if (state.maxRetouches === 0) {
