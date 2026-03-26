@@ -272,6 +272,7 @@
             <!-- Admin badge removed from header or moved to side -->
             <span
                 style="font-size:0.8rem; background:#333; padding:4px 8px; border-radius:4px; margin-left:auto;">ADMIN</span>
+            <button id="btn-delete-all-global" class="btn-text" style="color:var(--color-danger); margin-left:20px; font-size:0.7rem; border:1px solid var(--color-danger); padding:4px 8px;">ALLE PROJEKTE LÖSCHEN</button>
         </header>
 
         <!-- Create Project -->
@@ -450,6 +451,34 @@
             logoutBtn.style.marginLeft = '20px';
             logoutBtn.onclick = () => window.selectService.logout();
             header.appendChild(logoutBtn);
+
+            // Global Delete All Projects
+            const btnDeleteAll = document.getElementById('btn-delete-all-global');
+            if (btnDeleteAll) {
+                btnDeleteAll.onclick = async () => {
+                    if (confirm("⚠️ ACHTUNG: Bist du sicher? Dies löscht ALLE Projekte in der Datenbank unwiderruflich!")) {
+                        if (confirm("Zweite Bestätigung: Sollen wirklich ALLE Daten (Emails, Auswahlen, Links) gelöscht werden?")) {
+                            btnDeleteAll.disabled = true;
+                            btnDeleteAll.textContent = "LÖSCHT...";
+                            
+                            try {
+                                const projects = await window.selectService.getAllProjects();
+                                let deleted = 0;
+                                for (const p of projects) {
+                                    await window.selectService.deleteProject(p.id);
+                                    deleted++;
+                                }
+                                alert(`${deleted} Projekte wurden erfolgreich gelöscht.`);
+                                window.location.reload();
+                            } catch (e) {
+                                alert("Fehler beim Massen-Löschen: " + e.message);
+                                btnDeleteAll.disabled = false;
+                                btnDeleteAll.textContent = "ALLE PROJEKTE LÖSCHEN";
+                            }
+                        }
+                    }
+                };
+            }
 
             // Upload Logic
             const dropZone = document.getElementById('drop-zone');
