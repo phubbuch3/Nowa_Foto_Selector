@@ -27,7 +27,7 @@
         <aside class="sidebar">
             <div class="sidebar-header"
                 style="display:flex; align-items:center; justify-content:center; margin-bottom: 20px;">
-                <img src="bilder/logo.jpeg" alt="NOWA Studio" style="height: 120px; mix-blend-mode: screen;">
+                <img id="sidebar-logo" src="bilder/logo.jpeg" alt="NOWA Studio" style="height: 120px; mix-blend-mode: screen;">
             </div>
 
             <div class="package-selector">
@@ -48,15 +48,14 @@
 
             <div class="selection-summary">
                 <div class="counter-display">
-                    <span id="current-count">00</span>
+                    <span id="current-count">0</span>
                     <span class="separator">/</span>
-                    <span id="max-count">12</span>
+                    <span id="max-count">0</span>
                 </div>
+                <p id="retouch-counter-label" style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 4px;">Noch keine Retouchen gewählt</p>
                 <div class="progress-bar">
                     <div class="progress-fill" id="progress-fill"></div>
                 </div>
-
-
 
                 <div class="selected-list" id="selected-list">
                     <!-- Selected items will be injected here -->
@@ -244,7 +243,7 @@
     <div id="mobile-retouch-fab" class="fab-container mobile-retouch-fab" hidden>
         <button id="btn-mobile-buy-retouch" class="fab-btn" title="Zusätzliche Retouchen kaufen"
             style="background: var(--color-surface); border: 1px solid var(--color-border); color: var(--color-text); width: auto; height: auto; border-radius: 24px; padding: 10px 16px; font-size: 0.8rem; font-weight: 600; font-family: var(--font-main); gap: 6px;">
-            <span style="font-size: 1.1rem; line-height: 1;">+</span> Retouchen kaufen
+            Zusätzliche Retouchen kaufen
         </button>
     </div>
 
@@ -257,7 +256,7 @@
             </header>
             <div class="modal-body" style="padding: 16px 0;">
                 <p id="mobile-retouch-info" style="color: #ccc; font-size: 0.9rem; margin-bottom: 12px; line-height: 1.5;">
-                    Du hast <strong id="mobile-retouch-img-count" style="color: #fff;">0</strong> Bilder durch das Paket <strong id="mobile-retouch-pkg-name" style="color: #fff;">-</strong> zur Verfügung. Du kannst zusätzlich Retouchen kaufen.
+                    Durch das Paket mit <strong id="mobile-retouch-img-count" style="color: #fff;">0</strong> Bildern hast du <strong id="mobile-retouch-retouche-count" style="color: #fff;">0</strong> Retouchen zur Verfügung. Du kannst zusätzliche Retouchen kaufen.
                 </p>
                 <p style="color: #888; font-size: 0.75rem; margin-bottom: 20px; line-height: 1.4;">
                     Kaufst du eine Retouche mehr, kannst du für 1 zusätzliches Bild Retouchen kaufen. (+10 CHF / Stück)

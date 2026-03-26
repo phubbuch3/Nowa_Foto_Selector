@@ -79,7 +79,9 @@ document.addEventListener('DOMContentLoaded', () => {
         mobileBtnRemoveRetouch: document.getElementById('mobile-btn-remove-retouch'),
         mobileExtraRetouchCount: document.getElementById('mobile-extra-retouch-count'),
         mobileRetouchImgCount: document.getElementById('mobile-retouch-img-count'),
-        mobileRetouchPkgName: document.getElementById('mobile-retouch-pkg-name')
+        mobileRetouchRetoucheCount: document.getElementById('mobile-retouch-retouche-count'),
+        retouchCounterLabel: document.getElementById('retouch-counter-label'),
+        sidebarLogo: document.getElementById('sidebar-logo')
     };
 
     let activePhotoId = null; // ID currently being retouched in modal
@@ -104,6 +106,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("Admin Logged In:", user.email);
                 if (elements.adminLink) elements.adminLink.style.display = 'inline-block';
                 if (elements.adminFab) elements.adminFab.hidden = false;
+                // Admin: Logo clicks to dashboard
+                if (elements.sidebarLogo) {
+                    elements.sidebarLogo.style.cursor = 'pointer';
+                    elements.sidebarLogo.addEventListener('click', () => {
+                        window.location.href = 'index.html';
+                    });
+                }
             } else {
                 console.log("Guest User (Customer)");
             }
@@ -231,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Update Element Texts
-                if (elements.maxCount) elements.maxCount.textContent = state.maxSelection;
+                if (elements.maxCount) elements.maxCount.textContent = state.maxRetouches;
                 if (state.maxSelection === 0) {
                     // Special Case: 0 Retouches allowed (Basic Package)
                     // But maybe they still need to 'submit' that they have seen it?
@@ -606,18 +615,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 // Populate dynamic info text
                 if (elements.mobileRetouchImgCount) {
-                    elements.mobileRetouchImgCount.textContent = state.maxSelection;
+                    elements.mobileRetouchImgCount.textContent = state.baseMaxImages;
                 }
-                if (elements.mobileRetouchPkgName && state.project) {
-                    const pkgNames = {
-                        0: 'Bewerbungsfoto Basic',
-                        1: 'Bewerbungsfotos Standard',
-                        2: 'Bewerbungsfotos Advanced',
-                        3: 'Bewerbungsfotos Premium',
-                        4: 'Persönliche Portraits'
-                    };
-                    const pkgIndex = parseInt(state.project.packageSize) || 0;
-                    elements.mobileRetouchPkgName.textContent = pkgNames[pkgIndex] || 'Unbekannt';
+                if (elements.mobileRetouchRetoucheCount) {
+                    elements.mobileRetouchRetoucheCount.textContent = state.maxRetouches;
                 }
                 syncMobileRemoveBtn();
                 if (elements.mobileRetouchModal) elements.mobileRetouchModal.hidden = false;
@@ -649,8 +650,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     syncAllRetouchCounters();
                     updateSummary();
                     // Update the info text in the modal
-                    if (elements.mobileRetouchImgCount) {
-                        elements.mobileRetouchImgCount.textContent = state.maxSelection;
+                    if (elements.mobileRetouchRetoucheCount) {
+                        elements.mobileRetouchRetoucheCount.textContent = state.maxRetouches;
                     }
                 } catch (e) {
                     state.extraRetouches--;
@@ -685,8 +686,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     syncAllRetouchCounters();
                     updateSummary();
                     // Update the info text in the modal
-                    if (elements.mobileRetouchImgCount) {
-                        elements.mobileRetouchImgCount.textContent = state.maxSelection;
+                    if (elements.mobileRetouchRetoucheCount) {
+                        elements.mobileRetouchRetoucheCount.textContent = state.maxRetouches;
                     }
                 } catch (e) {
                     state.extraRetouches++;
@@ -1192,8 +1193,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const checkboxes = elements.retouchForm.querySelectorAll('input:checked');
         const options = Array.from(checkboxes).map(cb => cb.value);
 
-        // No retouch required — customer can select image without any retouch
-        // If they do choose retouches, that counts as 1 retouch slot
+        // Retouch IS required — customer must select at least 1 retouch to save
+        if (options.length === 0 && activePhotoId !== 'BULK') {
+            alert('Bitte wähle mindestens eine Retusche aus, um dieses Bild auszuwählen.\n\nWenn du das Bild nicht mehr auswählen möchtest, klicke auf "BILD ABWÄHLEN".');
+            return;
+        }
+
         if (options.length > 0 && activePhotoId !== 'BULK') {
             // Verify a retouch slot is available for this image
             const hadRetouchBefore = state.selectedPhotos.has(activePhotoId) && 
@@ -1281,15 +1286,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Summary & Toast ---
     function updateSummary() {
-        const count = state.selectedPhotos.size;
-        elements.currentCount.textContent = String(count).padStart(2, '0');
-        elements.maxCount.textContent = state.maxSelection;
+        const retouchCount = getUsedRetouchSlots(null);
+        elements.currentCount.textContent = retouchCount;
+        elements.maxCount.textContent = state.maxRetouches;
 
-        const percent = (count / state.maxSelection) * 100;
+        const percent = state.maxRetouches > 0 ? (retouchCount / state.maxRetouches) * 100 : 0;
         elements.progressFill.style.width = `${percent}%`;
 
-        if (elements.submitBtn) elements.submitBtn.disabled = (count === 0);
-        if (elements.btnSaveDraft) elements.btnSaveDraft.disabled = (count === 0);
+        // Update label text
+        if (elements.retouchCounterLabel) {
+            if (retouchCount === 0) {
+                elements.retouchCounterLabel.textContent = 'Noch keine Retouchen gewählt';
+            } else {
+                elements.retouchCounterLabel.textContent = 'Bilder für Retouchen gewählt';
+            }
+        }
+
+        if (elements.submitBtn) elements.submitBtn.disabled = (retouchCount === 0);
+        if (elements.btnSaveDraft) elements.btnSaveDraft.disabled = (retouchCount === 0);
 
         // Bulk Button Logic
         if (elements.btnBulkRetouch) {
