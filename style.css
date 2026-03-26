@@ -639,15 +639,45 @@ select {
     .sidebar {
         width: 100%;
         height: auto;
-        max-height: 25vh;
-        /* Initial folded state or small header */
+        max-height: none;
         padding: var(--space-s);
         border-right: none;
         border-bottom: 1px solid var(--color-border);
-        flex-direction: row;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        grid-template-rows: auto;
         align-items: center;
-        justify-content: space-between;
-        gap: var(--space-s);
+        gap: 4px var(--space-s);
+        overflow: hidden;
+    }
+
+    /* Logo spans the full left column */
+    .sidebar > .sidebar-header {
+        grid-column: 1;
+        grid-row: 1 / 4;
+        align-self: center;
+    }
+
+    /* Package selector on the right, row 1 */
+    .sidebar > .package-selector {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    /* Sidebar footer on the right, row 2 */
+    .sidebar > .sidebar-footer {
+        grid-column: 2;
+        grid-row: 2;
+    }
+
+    /* Logo: shrink-proof, smaller on mobile */
+    .sidebar-header {
+        flex-shrink: 0;
+        margin-bottom: 0 !important;
+    }
+
+    .sidebar-header img {
+        height: 64px !important;
     }
 
     .sidebar-header h1 {
@@ -655,8 +685,8 @@ select {
         margin: 0;
     }
 
-    .selection-summary,
-    .package-selector label {
+    /* Hide elements not needed on mobile */
+    .selection-summary {
         display: none;
     }
 
@@ -665,12 +695,54 @@ select {
         display: none !important;
     }
 
-    .sidebar {
-        overflow: hidden;
+    /* Package selector: show the dropdown and description text */
+    .package-selector {
+        flex: 1;
+        min-width: 0;
     }
 
-    /* Mobile Layout adjustments need JS to toggle full sidebar or simplified view */
-    /* For simplified MVP: Keep top header simple, show count */
+    .package-selector label {
+        display: none;
+    }
+
+    .package-selector .select-wrapper {
+        border-bottom: none;
+    }
+
+    .package-selector select {
+        font-size: 0.8rem;
+        padding: 4px 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .package-selector p {
+        margin-top: 4px !important;
+        font-size: 0.75rem !important;
+        line-height: 1.2 !important;
+    }
+
+    /* Sidebar footer: slim on mobile, only show action buttons */
+    .sidebar-footer {
+        flex-direction: row !important;
+        gap: 8px !important;
+        flex-shrink: 0;
+    }
+
+    /* Action buttons side by side on mobile */
+    .sidebar-action-buttons {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 8px;
+    }
+
+    .sidebar-action-buttons .btn-secondary,
+    .sidebar-action-buttons .btn-primary {
+        font-size: 0.7rem;
+        padding: 8px 8px;
+        white-space: nowrap;
+    }
 
     .counter-display {
         font-size: 1.5rem;
