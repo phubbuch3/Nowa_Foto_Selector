@@ -77,7 +77,9 @@ document.addEventListener('DOMContentLoaded', () => {
         mobileRetouchDone: document.getElementById('mobile-retouch-done'),
         mobileBtnAddRetouch: document.getElementById('mobile-btn-add-retouch'),
         mobileBtnRemoveRetouch: document.getElementById('mobile-btn-remove-retouch'),
-        mobileExtraRetouchCount: document.getElementById('mobile-extra-retouch-count')
+        mobileExtraRetouchCount: document.getElementById('mobile-extra-retouch-count'),
+        mobileRetouchImgCount: document.getElementById('mobile-retouch-img-count'),
+        mobileRetouchPkgName: document.getElementById('mobile-retouch-pkg-name')
     };
 
     let activePhotoId = null; // ID currently being retouched in modal
@@ -602,6 +604,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (elements.mobileExtraRetouchCount) {
                     elements.mobileExtraRetouchCount.textContent = state.extraRetouches;
                 }
+                // Populate dynamic info text
+                if (elements.mobileRetouchImgCount) {
+                    elements.mobileRetouchImgCount.textContent = state.maxSelection;
+                }
+                if (elements.mobileRetouchPkgName && state.project) {
+                    const pkgNames = {
+                        0: 'Bewerbungsfoto Basic',
+                        1: 'Bewerbungsfotos Standard',
+                        2: 'Bewerbungsfotos Advanced',
+                        3: 'Bewerbungsfotos Premium',
+                        4: 'Persönliche Portraits'
+                    };
+                    const pkgIndex = parseInt(state.project.packageSize) || 0;
+                    elements.mobileRetouchPkgName.textContent = pkgNames[pkgIndex] || 'Unbekannt';
+                }
                 syncMobileRemoveBtn();
                 if (elements.mobileRetouchModal) elements.mobileRetouchModal.hidden = false;
             });
@@ -618,33 +635,34 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Mobile Add Retouch
+        // Mobile Add Retouch (no system confirm popup)
         if (elements.mobileBtnAddRetouch) {
             elements.mobileBtnAddRetouch.addEventListener('click', async () => {
                 if (state.mode === 'view') return;
-                if (confirm("Möchtest du +1 zusätzliches Bild inklusive +1 Retusche für 10 CHF hinzufügen?")) {
-                    elements.mobileBtnAddRetouch.textContent = "…";
-                    elements.mobileBtnAddRetouch.disabled = true;
-                    try {
-                        state.extraRetouches++;
-                        await window.selectService.updateProjectExtraRetouches(state.projectId, state.extraRetouches);
-                        state.maxSelection = state.baseMaxImages + state.extraRetouches;
-                        state.maxRetouches = state.baseMaxRetouches + state.extraRetouches;
-                        syncAllRetouchCounters();
-                        updateSummary();
-                        alert("Erfolgreich hinzugefügt!");
-                    } catch (e) {
-                        state.extraRetouches--;
-                        alert("Fehler: " + e.message);
-                    } finally {
-                        elements.mobileBtnAddRetouch.textContent = "+";
-                        elements.mobileBtnAddRetouch.disabled = false;
+                elements.mobileBtnAddRetouch.textContent = "…";
+                elements.mobileBtnAddRetouch.disabled = true;
+                try {
+                    state.extraRetouches++;
+                    await window.selectService.updateProjectExtraRetouches(state.projectId, state.extraRetouches);
+                    state.maxSelection = state.baseMaxImages + state.extraRetouches;
+                    state.maxRetouches = state.baseMaxRetouches + state.extraRetouches;
+                    syncAllRetouchCounters();
+                    updateSummary();
+                    // Update the info text in the modal
+                    if (elements.mobileRetouchImgCount) {
+                        elements.mobileRetouchImgCount.textContent = state.maxSelection;
                     }
+                } catch (e) {
+                    state.extraRetouches--;
+                    alert("Fehler: " + e.message);
+                } finally {
+                    elements.mobileBtnAddRetouch.textContent = "+";
+                    elements.mobileBtnAddRetouch.disabled = false;
                 }
             });
         }
 
-        // Mobile Remove Retouch
+        // Mobile Remove Retouch (no system confirm popup)
         if (elements.mobileBtnRemoveRetouch) {
             elements.mobileBtnRemoveRetouch.addEventListener('click', async () => {
                 if (state.mode === 'view' || state.extraRetouches <= 0) return;
@@ -657,23 +675,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                if (confirm("Möchtest du -1 Retusche & Bild (10 CHF) entfernen?")) {
-                    elements.mobileBtnRemoveRetouch.textContent = "…";
-                    elements.mobileBtnRemoveRetouch.disabled = true;
-                    try {
-                        state.extraRetouches--;
-                        await window.selectService.updateProjectExtraRetouches(state.projectId, state.extraRetouches);
-                        state.maxSelection = state.baseMaxImages + state.extraRetouches;
-                        state.maxRetouches = state.baseMaxRetouches + state.extraRetouches;
-                        syncAllRetouchCounters();
-                        updateSummary();
-                    } catch (e) {
-                        state.extraRetouches++;
-                        alert("Fehler: " + e.message);
-                    } finally {
-                        elements.mobileBtnRemoveRetouch.textContent = "-";
-                        elements.mobileBtnRemoveRetouch.disabled = false;
+                elements.mobileBtnRemoveRetouch.textContent = "…";
+                elements.mobileBtnRemoveRetouch.disabled = true;
+                try {
+                    state.extraRetouches--;
+                    await window.selectService.updateProjectExtraRetouches(state.projectId, state.extraRetouches);
+                    state.maxSelection = state.baseMaxImages + state.extraRetouches;
+                    state.maxRetouches = state.baseMaxRetouches + state.extraRetouches;
+                    syncAllRetouchCounters();
+                    updateSummary();
+                    // Update the info text in the modal
+                    if (elements.mobileRetouchImgCount) {
+                        elements.mobileRetouchImgCount.textContent = state.maxSelection;
                     }
+                } catch (e) {
+                    state.extraRetouches++;
+                    alert("Fehler: " + e.message);
+                } finally {
+                    elements.mobileBtnRemoveRetouch.textContent = "-";
+                    elements.mobileBtnRemoveRetouch.disabled = false;
                 }
             });
         }
