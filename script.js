@@ -67,7 +67,17 @@ document.addEventListener('DOMContentLoaded', () => {
         lbSelectBtn: document.getElementById('lb-select-btn'),
 
         // Toast
-        toast: document.getElementById('toast')
+        toast: document.getElementById('toast'),
+
+        // Mobile Retouch FAB & Modal
+        mobileRetouchFab: document.getElementById('mobile-retouch-fab'),
+        btnMobileBuyRetouch: document.getElementById('btn-mobile-buy-retouch'),
+        mobileRetouchModal: document.getElementById('mobile-retouch-modal'),
+        mobileRetouchClose: document.getElementById('mobile-retouch-close'),
+        mobileRetouchDone: document.getElementById('mobile-retouch-done'),
+        mobileBtnAddRetouch: document.getElementById('mobile-btn-add-retouch'),
+        mobileBtnRemoveRetouch: document.getElementById('mobile-btn-remove-retouch'),
+        mobileExtraRetouchCount: document.getElementById('mobile-extra-retouch-count')
     };
 
     let activePhotoId = null; // ID currently being retouched in modal
@@ -264,6 +274,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             setupEventListeners();
 
+            // Show mobile retouch FAB in edit mode
+            if (state.mode === 'edit' && elements.mobileRetouchFab) {
+                elements.mobileRetouchFab.hidden = false;
+            }
+
         } catch (e) {
             console.error("Initialization Error:", e);
             alert('Fehler beim Laden: ' + e.message);
@@ -360,7 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         state.maxSelection = state.baseMaxImages + state.extraRetouches;
                         state.maxRetouches = state.baseMaxRetouches + state.extraRetouches;
-                        if (elements.extraRetouchCount) elements.extraRetouchCount.textContent = state.extraRetouches;
+                        syncAllRetouchCounters();
 
                         updateSummary();
                         alert("Erfolgreich hinzugefügt! NOWA Studio wird bei Klick auf 'Auswahl definitiv absenden' benachrichtigt.");
@@ -398,7 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         state.maxSelection = state.baseMaxImages + state.extraRetouches;
                         state.maxRetouches = state.baseMaxRetouches + state.extraRetouches;
-                        if (elements.extraRetouchCount) elements.extraRetouchCount.textContent = state.extraRetouches;
+                        syncAllRetouchCounters();
 
                         updateSummary();
                     } catch (e) {
@@ -578,6 +593,122 @@ document.addEventListener('DOMContentLoaded', () => {
                     elements.btnAddPhotos.disabled = false;
                 }
             });
+        }
+
+        // --- Mobile Retouch FAB & Modal ---
+        if (elements.btnMobileBuyRetouch) {
+            elements.btnMobileBuyRetouch.addEventListener('click', () => {
+                // Sync counter before opening
+                if (elements.mobileExtraRetouchCount) {
+                    elements.mobileExtraRetouchCount.textContent = state.extraRetouches;
+                }
+                syncMobileRemoveBtn();
+                if (elements.mobileRetouchModal) elements.mobileRetouchModal.hidden = false;
+            });
+        }
+
+        if (elements.mobileRetouchClose) {
+            elements.mobileRetouchClose.addEventListener('click', () => {
+                if (elements.mobileRetouchModal) elements.mobileRetouchModal.hidden = true;
+            });
+        }
+        if (elements.mobileRetouchDone) {
+            elements.mobileRetouchDone.addEventListener('click', () => {
+                if (elements.mobileRetouchModal) elements.mobileRetouchModal.hidden = true;
+            });
+        }
+
+        // Mobile Add Retouch
+        if (elements.mobileBtnAddRetouch) {
+            elements.mobileBtnAddRetouch.addEventListener('click', async () => {
+                if (state.mode === 'view') return;
+                if (confirm("Möchtest du +1 zusätzliches Bild inklusive +1 Retusche für 10 CHF hinzufügen?")) {
+                    elements.mobileBtnAddRetouch.textContent = "…";
+                    elements.mobileBtnAddRetouch.disabled = true;
+                    try {
+                        state.extraRetouches++;
+                        await window.selectService.updateProjectExtraRetouches(state.projectId, state.extraRetouches);
+                        state.maxSelection = state.baseMaxImages + state.extraRetouches;
+                        state.maxRetouches = state.baseMaxRetouches + state.extraRetouches;
+                        syncAllRetouchCounters();
+                        updateSummary();
+                        alert("Erfolgreich hinzugefügt!");
+                    } catch (e) {
+                        state.extraRetouches--;
+                        alert("Fehler: " + e.message);
+                    } finally {
+                        elements.mobileBtnAddRetouch.textContent = "+";
+                        elements.mobileBtnAddRetouch.disabled = false;
+                    }
+                }
+            });
+        }
+
+        // Mobile Remove Retouch
+        if (elements.mobileBtnRemoveRetouch) {
+            elements.mobileBtnRemoveRetouch.addEventListener('click', async () => {
+                if (state.mode === 'view' || state.extraRetouches <= 0) return;
+
+                const totalUsedRetouchSlots = getUsedRetouchSlots(null);
+                const totalPhotosSelected = state.selectedPhotos.size;
+
+                if (state.baseMaxRetouches + state.extraRetouches - 1 < totalUsedRetouchSlots || state.baseMaxImages + state.extraRetouches - 1 < totalPhotosSelected) {
+                    alert("Diese Retusche ist bereits in Benutzung. Bitte wähle zuerst eine Retusche oder ein Bild ab.");
+                    return;
+                }
+
+                if (confirm("Möchtest du -1 Retusche & Bild (10 CHF) entfernen?")) {
+                    elements.mobileBtnRemoveRetouch.textContent = "…";
+                    elements.mobileBtnRemoveRetouch.disabled = true;
+                    try {
+                        state.extraRetouches--;
+                        await window.selectService.updateProjectExtraRetouches(state.projectId, state.extraRetouches);
+                        state.maxSelection = state.baseMaxImages + state.extraRetouches;
+                        state.maxRetouches = state.baseMaxRetouches + state.extraRetouches;
+                        syncAllRetouchCounters();
+                        updateSummary();
+                    } catch (e) {
+                        state.extraRetouches++;
+                        alert("Fehler: " + e.message);
+                    } finally {
+                        elements.mobileBtnRemoveRetouch.textContent = "-";
+                        elements.mobileBtnRemoveRetouch.disabled = false;
+                    }
+                }
+            });
+        }
+    }
+
+    // Helper: Sync all retouch counter displays (desktop sidebar + mobile modal)
+    function syncAllRetouchCounters() {
+        if (elements.extraRetouchCount) elements.extraRetouchCount.textContent = state.extraRetouches;
+        if (elements.mobileExtraRetouchCount) elements.mobileExtraRetouchCount.textContent = state.extraRetouches;
+        syncMobileRemoveBtn();
+        // Sync desktop remove button
+        if (elements.btnRemoveRetouch) {
+            if (state.extraRetouches <= 0) {
+                elements.btnRemoveRetouch.disabled = true;
+                elements.btnRemoveRetouch.style.background = '#333';
+                elements.btnRemoveRetouch.style.cursor = 'not-allowed';
+            } else {
+                elements.btnRemoveRetouch.disabled = false;
+                elements.btnRemoveRetouch.style.background = 'var(--color-text)';
+                elements.btnRemoveRetouch.style.cursor = 'pointer';
+            }
+        }
+    }
+
+    function syncMobileRemoveBtn() {
+        if (elements.mobileBtnRemoveRetouch) {
+            if (state.extraRetouches <= 0) {
+                elements.mobileBtnRemoveRetouch.disabled = true;
+                elements.mobileBtnRemoveRetouch.style.background = '#333';
+                elements.mobileBtnRemoveRetouch.style.cursor = 'not-allowed';
+            } else {
+                elements.mobileBtnRemoveRetouch.disabled = false;
+                elements.mobileBtnRemoveRetouch.style.background = 'var(--color-text)';
+                elements.mobileBtnRemoveRetouch.style.cursor = 'pointer';
+            }
         }
     }
 

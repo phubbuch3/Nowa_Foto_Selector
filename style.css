@@ -660,6 +660,15 @@ select {
         display: none;
     }
 
+    /* Hide buy-retouch section on mobile — replaced by FAB */
+    #buy-retouch-container {
+        display: none !important;
+    }
+
+    .sidebar {
+        overflow: hidden;
+    }
+
     /* Mobile Layout adjustments need JS to toggle full sidebar or simplified view */
     /* For simplified MVP: Keep top header simple, show count */
 
@@ -674,6 +683,11 @@ select {
     .grid-container {
         grid-template-columns: repeat(2, 1fr);
         gap: var(--space-xs);
+    }
+
+    /* Show mobile retouch FAB */
+    .mobile-retouch-fab {
+        display: block !important;
     }
 }
 
@@ -703,6 +717,33 @@ select {
 .fab-btn:hover {
     transform: scale(1.1);
     background-color: #f0f0f0;
+}
+
+/* Mobile Retouch FAB — positioned bottom-left, hidden on desktop */
+.mobile-retouch-fab {
+    display: none;
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    right: auto;
+    z-index: 1000;
+}
+
+/* Accessibility: Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .modal-content,
+    .selected-item,
+    .toast,
+    .photo-card,
+    .photo-card img,
+    .check-indicator,
+    .progress-fill,
+    .fab-btn,
+    .lb-nav,
+    .lb-content img {
+        animation: none !important;
+        transition: none !important;
+    }
 }
 
 

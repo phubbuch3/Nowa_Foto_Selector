@@ -42,8 +42,7 @@
                     </select>
                 </div>
                 <p style="font-size: 0.8rem; color: #888; margin-top: 10px; line-height: 1.4;">
-                    Dein Paket enthält eine fixe Anzahl an Retuschen (siehe oben). Wähle deine Favoriten für die
-                    Bearbeitung aus.
+                    Wähle deine Retouchen aus.
                 </p>
             </div>
 
@@ -237,6 +236,44 @@
             </svg>
         </button>
         <input type="file" id="admin-file-input" multiple accept="image/*" hidden>
+    </div>
+
+    <!-- Mobile FAB: Buy Extra Retouches (visible only on mobile) -->
+    <div id="mobile-retouch-fab" class="fab-container mobile-retouch-fab" hidden>
+        <button id="btn-mobile-buy-retouch" class="fab-btn" title="Zusätzliche Retouchen kaufen" style="background: var(--color-surface); border: 1px solid var(--color-border); color: var(--color-text); width: 48px; height: 48px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26z"></path>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Mobile Retouch Purchase Modal -->
+    <div class="modal-overlay" id="mobile-retouch-modal" hidden>
+        <div class="modal-content" style="max-width: 360px; text-align: center;">
+            <header class="modal-header" style="justify-content: center;">
+                <h2 style="font-size: 1.2rem;">Zusätzliche Optionen</h2>
+                <button class="close-btn" id="mobile-retouch-close">&times;</button>
+            </header>
+            <div class="modal-body" style="padding: 16px 0;">
+                <p style="color: #aaa; font-size: 0.85rem; margin-bottom: 20px; line-height: 1.4;">
+                    Füge zusätzliche Bilder inkl. Retuschen hinzu.<br>
+                    <strong style="color: #fff;">+10 CHF / Stück</strong>
+                </p>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 24px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 16px;">
+                    <button class="btn-text" id="mobile-btn-remove-retouch"
+                        style="padding: 0; font-size: 1.5rem; line-height: 1; color: var(--color-bg); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #333; border-radius: 6px; transition: background 0.2s;"
+                        disabled>-</button>
+                    <div style="font-size: 1.2rem; font-weight: bold; min-width: 100px;">
+                        <span id="mobile-extra-retouch-count" style="font-size: 1.5rem; margin-right: 4px;">0</span> x Retusche
+                    </div>
+                    <button class="btn-text" id="mobile-btn-add-retouch"
+                        style="padding: 0; font-size: 1.5rem; line-height: 1; color: var(--color-bg); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--color-text); border-radius: 6px; transition: background 0.2s;">+</button>
+                </div>
+            </div>
+            <footer style="padding-top: 16px; border-top: 1px solid var(--color-border);">
+                <button class="btn-primary" id="mobile-retouch-done" style="width: 100%;">Fertig</button>
+            </footer>
+        </div>
     </div>
 
     <!-- Checkout Modal -->
