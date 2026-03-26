@@ -81,7 +81,9 @@ document.addEventListener('DOMContentLoaded', () => {
         mobileRetouchImgCount: document.getElementById('mobile-retouch-img-count'),
         mobileRetouchRetoucheCount: document.getElementById('mobile-retouch-retouche-count'),
         retouchCounterLabel: document.getElementById('retouch-counter-label'),
-        sidebarLogo: document.getElementById('sidebar-logo')
+        sidebarLogo: document.getElementById('sidebar-logo'),
+        extraRetouchTotalPrice: document.getElementById('extra-retouch-total-price'),
+        mobileRetouchTotalPrice: document.getElementById('mobile-retouch-total-price')
     };
 
     let activePhotoId = null; // ID currently being retouched in modal
@@ -708,6 +710,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function syncAllRetouchCounters() {
         if (elements.extraRetouchCount) elements.extraRetouchCount.textContent = state.extraRetouches;
         if (elements.mobileExtraRetouchCount) elements.mobileExtraRetouchCount.textContent = state.extraRetouches;
+
+        // Update Total Prices
+        const totalPrice = state.extraRetouches * 10;
+        if (elements.extraRetouchTotalPrice) elements.extraRetouchTotalPrice.textContent = `${totalPrice} CHF Total`;
+        if (elements.mobileRetouchTotalPrice) elements.mobileRetouchTotalPrice.textContent = `${totalPrice} CHF Total`;
+
         syncMobileRemoveBtn();
         // Sync desktop remove button
         if (elements.btnRemoveRetouch) {
