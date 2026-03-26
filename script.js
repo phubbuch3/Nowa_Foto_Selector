@@ -226,8 +226,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 state.baseMaxRetouches = packageLimits[pkgIndex].retouches;
                 state.extraRetouches = project.extraRetouches || 0;
 
-                state.maxSelection = state.baseMaxImages + state.extraRetouches;
+                // Selection limit is now strictly the number of retouches
                 state.maxRetouches = state.baseMaxRetouches + state.extraRetouches;
+                state.maxSelection = state.maxRetouches;
 
                 if (elements.extraRetouchCount) elements.extraRetouchCount.textContent = state.extraRetouches;
 
@@ -241,16 +242,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Update Element Texts
                 if (elements.maxCount) elements.maxCount.textContent = state.maxRetouches;
-                if (state.maxSelection === 0) {
+                if (state.maxRetouches === 0) {
                     // Special Case: 0 Retouches allowed (Basic Package)
-                    // But maybe they still need to 'submit' that they have seen it?
-                    // Or if 0 retouches, they just download the raw files?
-                    // User request: "mann soll nur noch so viele bilder markieren wie retouchen man zur verfügung hat"
-                    // So if 0 -> 0 marks allowed.
+                    if (elements.retouchCounterLabel) {
+                        elements.retouchCounterLabel.textContent = 'In diesem Paket sind keine Retuschen enthalten.';
+                        elements.retouchCounterLabel.style.color = 'var(--color-text-muted)';
+                    }
+                    if (elements.submitBtn) elements.submitBtn.disabled = false; // Allow "submitting" an empty selection 
 
                     // Disable selection
                     document.body.classList.add('no-selection');
-                    if (document.getElementById('selected-list')) document.getElementById('selected-list').innerHTML = '<div style="padding:10px; color:#888;">Keine Retuschen in diesem Paket enthalten.</div>';
+                    if (document.getElementById('selected-list')) {
+                        document.getElementById('selected-list').innerHTML = '<div style="padding:10px; color:#888;">Keine Retuschen in diesem Paket enthalten.</div>';
+                    }
                 }
 
                 // Hide Bulk Retouch if max selection is small (logic change requested)

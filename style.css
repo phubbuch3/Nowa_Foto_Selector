@@ -668,6 +668,7 @@ select {
     .sidebar > .sidebar-footer {
         grid-column: 2;
         grid-row: 2;
+        padding-top: 10px;
     }
 
     /* Logo: shrink-proof, smaller on mobile */
@@ -723,25 +724,29 @@ select {
         line-height: 1.2 !important;
     }
 
-    /* Sidebar footer: slim on mobile, only show action buttons */
+    /* Sidebar footer: slim on mobile, vertical buttons */
     .sidebar-footer {
-        flex-direction: row !important;
+        flex-direction: column !important;
         gap: 8px !important;
         flex-shrink: 0;
     }
 
-    /* Action buttons side by side on mobile */
+    /* Action buttons stacked on mobile to prevent cut-off */
     .sidebar-action-buttons {
         display: flex !important;
-        flex-direction: row !important;
-        gap: 8px;
+        flex-direction: column !important;
+        gap: 6px;
+        width: 100%;
     }
 
     .sidebar-action-buttons .btn-secondary,
     .sidebar-action-buttons .btn-primary {
-        font-size: 0.7rem;
-        padding: 8px 8px;
-        white-space: nowrap;
+        font-size: 0.8rem;
+        padding: 10px 12px;
+        white-space: normal;
+        text-align: center;
+        width: 100%;
+        line-height: 1.2;
     }
 
     .counter-display {
