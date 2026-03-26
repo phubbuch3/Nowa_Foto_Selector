@@ -379,10 +379,10 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.btnRemoveRetouch.addEventListener('click', async () => {
                 if (state.mode === 'view' || state.extraRetouches <= 0) return;
 
-                const totalUsedRetouches = getUsedRetouches(null);
+                const totalUsedRetouchSlots = getUsedRetouchSlots(null);
                 const totalPhotosSelected = state.selectedPhotos.size;
 
-                if (state.baseMaxRetouches + state.extraRetouches - 1 < totalUsedRetouches || state.baseMaxImages + state.extraRetouches - 1 < totalPhotosSelected) {
+                if (state.baseMaxRetouches + state.extraRetouches - 1 < totalUsedRetouchSlots || state.baseMaxImages + state.extraRetouches - 1 < totalPhotosSelected) {
                     alert("Diese Retusche ist bereits in Benutzung.\\nBitte wähle zuerst eine Retusche oder ein Bild ab, bevor du die Option entfernst.");
                     return;
                 }
@@ -948,11 +948,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function getUsedRetouches(ignorePhotoId = null) {
+    function getUsedRetouchSlots(ignorePhotoId = null) {
         let used = 0;
         state.selectedPhotos.forEach((data, id) => {
-            if (id !== ignorePhotoId && data.options) {
-                used += data.options.length;
+            if (id !== ignorePhotoId && data.options && data.options.length > 0) {
+                used++; // count images that have at least one retouch
             }
         });
         return used;
@@ -987,7 +987,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 elements.modalDeselect.style.visibility = 'hidden';
             }
 
-            // Limit checks for checkboxes
+            // Counter display for retouch slots (images with retouches)
             const checkboxes = elements.retouchForm.querySelectorAll('input');
             const usedSpan = document.getElementById('retouch-used');
             const maxSpan = document.getElementById('retouch-max');
@@ -995,8 +995,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const updateCounterDisplay = () => {
                 if (usedSpan && maxSpan) {
                     const currentlyChecked = elements.retouchForm.querySelectorAll('input:checked').length;
-                    const otherUsed = getUsedRetouches(activePhotoId);
-                    usedSpan.textContent = otherUsed + currentlyChecked;
+                    const otherUsedSlots = getUsedRetouchSlots(activePhotoId);
+                    // Show how many images use a retouch slot (this image counts as 1 if any checkbox checked)
+                    const thisImageUsesSlot = currentlyChecked > 0 ? 1 : 0;
+                    usedSpan.textContent = otherUsedSlots + thisImageUsesSlot;
                     maxSpan.textContent = state.maxRetouches;
                 }
             };
@@ -1006,14 +1008,20 @@ document.addEventListener('DOMContentLoaded', () => {
             checkboxes.forEach(cb => {
                 cb.onchange = (e) => {
                     const currentlyChecked = elements.retouchForm.querySelectorAll('input:checked').length;
-                    const otherUsed = getUsedRetouches(activePhotoId);
+                    const otherUsedSlots = getUsedRetouchSlots(activePhotoId);
 
-                    if (e.target.checked) {
-                        if (otherUsed + currentlyChecked > state.maxRetouches) {
+                    if (e.target.checked && currentlyChecked === 1) {
+                        // First checkbox on this image — check if a slot is available
+                        // (only counts if this image didn't already have a retouch)
+                        const hadRetouchBefore = state.selectedPhotos.has(activePhotoId) && 
+                            state.selectedPhotos.get(activePhotoId).options && 
+                            state.selectedPhotos.get(activePhotoId).options.length > 0;
+                        if (!hadRetouchBefore && otherUsedSlots >= state.maxRetouches) {
                             e.target.checked = false;
-                            alert(`Limit erreicht! Du hast in deinem Paket max. ${state.maxRetouches} Retuschen zur Verfügung.\n\nDu kannst unten links weitere Retuschen (+10 CHF) dazukaufen.`);
+                            alert(`Retusche-Limit erreicht! Du kannst max. ${state.maxRetouches} Bilder mit Retuschen versehen.\n\nDu kannst unten links weitere Retuschen (+10 CHF) dazukaufen.`);
                         }
                     }
+                    // No limit on additional checkboxes per image — customer can freely choose
                     updateCounterDisplay(); // Update on change
                 };
             });
@@ -1033,9 +1041,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const checkboxes = elements.retouchForm.querySelectorAll('input:checked');
         const options = Array.from(checkboxes).map(cb => cb.value);
 
-        if (options.length === 0 && activePhotoId !== 'BULK') {
-            alert('Bitte wähle mindestens eine Retusche aus. Ohne Retusche kann das Bild nicht ausgewählt werden.\n\nWenn du das Bild nicht mehr auswählen möchtest, klicke unten links auf "BILD ABWÄHLEN".');
-            return;
+        // No retouch required — customer can select image without any retouch
+        // If they do choose retouches, that counts as 1 retouch slot
+        if (options.length > 0 && activePhotoId !== 'BULK') {
+            // Verify a retouch slot is available for this image
+            const hadRetouchBefore = state.selectedPhotos.has(activePhotoId) && 
+                state.selectedPhotos.get(activePhotoId).options && 
+                state.selectedPhotos.get(activePhotoId).options.length > 0;
+            if (!hadRetouchBefore) {
+                const usedSlots = getUsedRetouchSlots(activePhotoId);
+                if (usedSlots >= state.maxRetouches) {
+                    alert(`Retusche-Limit erreicht! Du kannst max. ${state.maxRetouches} Bilder mit Retuschen versehen.`);
+                    return;
+                }
+            }
         }
 
         if (activePhotoId === 'BULK') {
