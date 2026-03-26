@@ -559,6 +559,14 @@
                 if (emptyMsg) emptyMsg.style.display = 'none';
                 grid.style.display = 'grid'; // Ensure grid display
 
+                const packageNames = {
+                    0: 'Basic',
+                    1: 'Standard',
+                    2: 'Advanced',
+                    3: 'Premium',
+                    4: 'Portrait'
+                };
+
                 filtered.forEach(p => {
                     const date = p.createdAt ? new Date(p.createdAt).toLocaleDateString('de-DE') : 'Kein Datum';
                     const status = p.status || 'UNKNOWN';
@@ -587,6 +595,9 @@
                     card.innerHTML = `
                         <div style="position:relative; aspect-ratio: 3/2; overflow:hidden;">
                             <img src="${previewUrl}" class="gallery-preview" style="width:100%; height:100%; object-fit:cover;">
+                            <div style="position:absolute; top:10px; left:10px;">
+                                <span class="status-badge" style="background:#000; color:#fff; font-size:0.65rem;">${packageNames[p.packageSize] || 'Unbekannt'}</span>
+                            </div>
                             <div style="position:absolute; top:10px; right:10px;">
                                 <span class="status-badge ${badgeClass}">${status}</span>
                             </div>
@@ -842,18 +853,40 @@
                     btnComplete.textContent = 'Bilder hochladen & Abschließen';
 
                     // Delete Handler (Available for all statuses)
+                    // Delete Handler: Two-click confirmation
                     const btnDelete = document.getElementById('btn-delete-project');
                     if (btnDelete) {
+                        btnDelete.textContent = "PROJEKT LÖSCHEN";
+                        btnDelete.classList.remove('btn-danger'); // reset
+                        btnDelete.style.background = 'transparent';
+
                         btnDelete.onclick = async () => {
-                            const confirmText = prompt(`Möchtest du das Projekt ${project.email} wirklich unwiderruflich LÖSCHEN?\n\nTippe "LÖSCHEN" zur Bestätigung:`);
-                            if (confirmText === 'LÖSCHEN') {
+                            if (btnDelete.textContent === "PROJEKT LÖSCHEN") {
+                                btnDelete.textContent = "BIST DU SICHER? (JETZT LÖSCHEN)";
+                                btnDelete.style.background = "var(--color-danger)";
+                                btnDelete.style.color = "#fff";
+                                btnDelete.style.padding = "5px 15px";
+                                
+                                // Auto-reset after 3 seconds
+                                setTimeout(() => {
+                                    if(btnDelete && btnDelete.textContent.includes("SICHER")) {
+                                        btnDelete.textContent = "PROJEKT LÖSCHEN";
+                                        btnDelete.style.background = "transparent";
+                                        btnDelete.style.color = "var(--color-danger)";
+                                    }
+                                }, 3000);
+                            } else {
                                 try {
+                                    btnDelete.disabled = true;
+                                    btnDelete.textContent = "LÖSCHT...";
                                     await window.selectService.deleteProject(project.id);
                                     alert('Projekt gelöscht.');
                                     detailModal.hidden = true;
                                     refreshList();
                                 } catch (e) {
                                     alert('Fehler beim Löschen: ' + e.message);
+                                    btnDelete.textContent = "PROJEKT LÖSCHEN";
+                                    btnDelete.disabled = false;
                                 }
                             }
                         };

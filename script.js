@@ -394,10 +394,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         state.extraRetouches++;
                         await window.selectService.updateProjectExtraRetouches(state.projectId, state.extraRetouches);
 
-                        state.maxSelection = state.baseMaxImages + state.extraRetouches;
                         state.maxRetouches = state.baseMaxRetouches + state.extraRetouches;
-                        syncAllRetouchCounters();
+                        state.maxSelection = state.maxRetouches; 
+                        
+                        // Handle Basic package (re-enabling selection if they buy first retouch)
+                        if (state.maxRetouches > 0) {
+                            document.body.classList.remove('no-selection');
+                        }
 
+                        syncAllRetouchCounters();
                         updateSummary();
                         alert("Erfolgreich hinzugefügt! NOWA Studio wird bei Klick auf 'Auswahl definitiv absenden' benachrichtigt.");
                     } catch (e) {
@@ -432,10 +437,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         state.extraRetouches--;
                         await window.selectService.updateProjectExtraRetouches(state.projectId, state.extraRetouches);
 
-                        state.maxSelection = state.baseMaxImages + state.extraRetouches;
                         state.maxRetouches = state.baseMaxRetouches + state.extraRetouches;
-                        syncAllRetouchCounters();
+                        state.maxSelection = state.maxRetouches;
 
+                        // Re-disable selection if they go back to 0
+                        if (state.maxRetouches === 0) {
+                            document.body.classList.add('no-selection');
+                        }
+
+                        syncAllRetouchCounters();
                         updateSummary();
                     } catch (e) {
                         state.extraRetouches++;
@@ -845,14 +855,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Share Logic ---
     function openShareModal() {
-        // Generate Links
+        // Generate Link
         const baseUrl = window.location.href.split('?')[0];
         const editUrl = `${baseUrl}?projectId=${state.projectId}`;
-        const viewUrl = `${baseUrl}?projectId=${state.projectId}&view=true`;
 
         elements.shareLinkEdit.value = editUrl;
-        elements.shareLinkView.value = viewUrl;
-
         elements.shareModal.hidden = false;
     }
 
