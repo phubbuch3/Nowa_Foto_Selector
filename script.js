@@ -133,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             state.project = project;
+            window.originalProjectAssets = project.assets || [];
 
             // --- Status Logic ---
             if (project.status === 'COMPLETED') {
@@ -909,19 +910,30 @@ document.addEventListener('DOMContentLoaded', () => {
             const idBadge = document.createElement('div');
             idBadge.className = 'photo-id-badge';
 
-            // User Requirement: "schön nummeriert", "wieder bei 1 anfangen"
-            // Use Index + 1 for clean display regardless of internal ID logic
-            idBadge.textContent = `${labelPrefix} #${String(index + 1).padStart(3, '0')}`;
-
-            // Visual Distinction for Originals
+            // Visual Distinction for Originals vs Finals
             if (labelPrefix === 'ORIGINAL') {
+                idBadge.textContent = `${labelPrefix} #${String(index + 1).padStart(3, '0')}`;
                 idBadge.style.color = '#ffaaaa';
                 idBadge.style.border = '1px solid #ffaaaa';
             }
-            // Visual Distinction for Finals
+            // Logic for Finals to show original number + Retuschiert
             else if (labelPrefix === 'FINAL') {
+                const origAssets = window.originalProjectAssets || [];
+                // Find matching original asset by filename
+                const origIndex = origAssets.findIndex(a => a.name === asset.name || asset.name.includes(a.name));
+                
+                if (origIndex !== -1) {
+                    idBadge.textContent = `#${String(origIndex + 1).padStart(3, '0')} Retuschiert`;
+                } else {
+                    idBadge.textContent = `#${String(index + 1).padStart(3, '0')} Retuschiert`;
+                }
+                
                 idBadge.style.color = '#aaffaa';
                 idBadge.style.border = '1px solid #aaffaa';
+            } 
+            else {
+                // Default logic
+                idBadge.textContent = `${labelPrefix} #${String(index + 1).padStart(3, '0')}`;
             }
 
             card.append(idBadge);

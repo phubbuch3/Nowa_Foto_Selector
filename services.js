@@ -227,7 +227,7 @@ class SelectStudioService {
 
     async completeProjectWithFinals(projectId, files) {
         // 1. Upload Finals to separate folder "processed"
-        const finalAssets = await this.uploadFilesToCloud(files, 'processed');
+        const finalAssets = await this.uploadFilesToCloud(files, 'processed', 'RETUSCHIERT');
 
         // 2. Update Firestore
         const snapshot = await this.db.collection('projects').where('id', '==', projectId).get();
@@ -260,7 +260,7 @@ class SelectStudioService {
 
     // --- Cloud Helpers ---
 
-    async uploadFilesToCloud(files, folderName = 'projects') {
+    async uploadFilesToCloud(files, folderName = 'projects', assetType = 'RAW') {
         if (!files || files.length === 0) return [];
 
         const assets = [];
@@ -286,7 +286,7 @@ class SelectStudioService {
                 id: uniqueId,
                 url: downloadURL,
                 name: file.name,
-                type: 'RAW'
+                type: assetType
             };
         });
 
