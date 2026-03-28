@@ -338,7 +338,7 @@ class SelectStudioService {
         // Configure Message based on Type
         if (type === 'UPLOAD_READY') {
             templateParams.subject = "Deine Galerie ist online! 📸";
-            templateParams.message = `Deine Bilder sind bereit. Du kannst ab sofort deine Auswahl treffen.`;
+            templateParams.message = `Hey ${templateParams.to_name},\n\nVielen Dank für deine Buchung und dein Vertrauen.\n\nDeine Galerie ist bereit!\n\nWähle jetzt deine Favoriten für die finale Retusche:\n\nDie retuschierten Bilder erhältst du innerhalb von 48 Stunden.\nWeitere Bilder können auf Wunsch gegen Aufpreis retuschiert werden.\n\nIch freue mich auf deine Auswahl.\n\nLiebe Grüsse\nNora\nNOWA Studio`;
             templateParams.link_action = galleryUrl;
             templateParams.btn_text = "Galerie ansehen";
         }
