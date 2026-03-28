@@ -910,8 +910,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const idBadge = document.createElement('div');
             idBadge.className = 'photo-id-badge';
 
+            if (asset.type === 'RETUSCHIERT') {
+                const origAssets = window.originalProjectAssets || state.currentAssets || [];
+                // Find matching original asset by filename
+                const origIndex = origAssets.findIndex(a => a.id !== asset.id && (a.name === asset.name || asset.name.includes(a.name)));
+                
+                if (origIndex !== -1) {
+                    idBadge.textContent = `#${String(origIndex + 1).padStart(3, '0')} Retuschiert`;
+                } else {
+                    idBadge.textContent = `#${String(index + 1).padStart(3, '0')} Retuschiert`;
+                }
+                
+                idBadge.style.color = '#aaffaa';
+                idBadge.style.border = '1px solid #aaffaa';
+            }
             // Visual Distinction for Originals vs Finals
-            if (labelPrefix === 'ORIGINAL') {
+            else if (labelPrefix === 'ORIGINAL') {
                 idBadge.textContent = `${labelPrefix} #${String(index + 1).padStart(3, '0')}`;
                 idBadge.style.color = '#ffaaaa';
                 idBadge.style.border = '1px solid #ffaaaa';

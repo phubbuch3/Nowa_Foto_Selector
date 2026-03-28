@@ -154,16 +154,22 @@ class SelectStudioService {
     // --- Asset Operations ---
 
     async addAssetsToProject(projectId, files) {
-        // 1. Upload
-        const newAssets = await this.uploadFilesToCloud(files);
-
-        // 2. Update Firestore
-        // We need to get current assets first or just arrayUnion? 
-        // Firestore arrayUnion is cleaner.
         const snapshot = await this.db.collection('projects').where('id', '==', projectId).get();
         if (snapshot.empty) throw new Error('Project not found');
 
         const doc = snapshot.docs[0];
+        const project = doc.data();
+
+        let folderName = 'projects';
+        let assetType = 'RAW';
+
+        if (project.status === 'PROCESSING') {
+            folderName = 'processed';
+            assetType = 'RETUSCHIERT';
+        }
+
+        // 1. Upload
+        const newAssets = await this.uploadFilesToCloud(files, folderName, assetType);
 
         // Use arrayUnion to append
         await doc.ref.update({

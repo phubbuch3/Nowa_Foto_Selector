@@ -713,9 +713,9 @@ select {
     .package-selector select {
         font-size: 0.8rem;
         padding: 4px 0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        white-space: normal;
+        overflow: visible;
+        word-wrap: break-word;
     }
 
     .package-selector p {
