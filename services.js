@@ -373,7 +373,7 @@ class SelectStudioService {
                 <p>Deine Galerie ist bereit!<br>
                 Wähle jetzt deine Favoriten für die finale Retusche:</p>
                 
-                <p style="margin: 30px 0; text-align: center;">
+                <p style="margin: 30px 0; text-align: left;">
                     <a href="${galleryUrl}" 
                        style="display: inline-block; padding: 12px 24px; background-color: #000; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold; font-family: sans-serif;">
                         Galerie ansehen
