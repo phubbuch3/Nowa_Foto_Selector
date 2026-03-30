@@ -383,7 +383,7 @@ class SelectStudioService {
                         </a>
                     </p>
 
-                    <p>Bilder können auf Wunsch gegen Aufpreis retuschiert werden.</p>
+                    <p>Gegen einen Aufpreis kannst du Bilder auswählen, die für dich retuschiert werden.</p>
                     <p>Ich freue mich auf dein Feedback.</p>
                     <p>Liebe Grüsse<br>
                     Nora<br>
@@ -404,7 +404,7 @@ class SelectStudioService {
                     </p>
 
                     <p>Die retuschierten Bilder erhältst du innerhalb von 48 Stunden.<br>
-                    Weitere Bilder können auf Wunsch gegen Aufpreis retuschiert werden.</p>
+                    Gegen einen Aufpreis kannst du zusätzliche Bilder auswählen, die für dich retuschiert werden.</p>
                     <p>Ich freue mich auf deine Auswahl.</p>
                     <p>Liebe Grüsse<br>
                     Nora<br>
