@@ -354,7 +354,9 @@
                 Keine Gallerien gefunden.
             </p>
             <div style="margin-top: 40px; text-align: left;">
-                <button id="btn-delete-all-global" class="btn-text" style="color:var(--color-danger); font-size:0.7rem; border:1px solid var(--color-danger); padding:4px 8px;">ALLE PROJEKTE LÖSCHEN</button>
+                <button id="btn-delete-all-global" class="btn-text"
+                    style="color:var(--color-danger); font-size:0.7rem; border:1px solid var(--color-danger); padding:4px 8px;">ALLE
+                    PROJEKTE LÖSCHEN</button>
             </div>
         </section>
 
@@ -382,7 +384,8 @@
                         <span class="label-small">Status & Infos</span><br>
                         <span id="detail-status" style="font-weight: bold;">-</span><br>
                         <span id="detail-project-id" style="font-size: 0.7rem; color: #888;">ID: -</span><br>
-                        <span id="detail-retouch-info" style="font-size: 0.75rem; color: #aaa;">Retuschen: 0 + 0 Extra</span>
+                        <span id="detail-retouch-info" style="font-size: 0.75rem; color: #aaa;">Retuschen: 0 + 0
+                            Extra</span>
                     </div>
                 </div>
 
@@ -416,17 +419,19 @@
                     </div>
                 </div>
                 <!-- Project Detail Modal -->
-        ...
+                ...
 
-        <!-- NEW: Preview Image Modal for Dashboard -->
-        <div id="preview-zoom-modal" class="modal-overlay" hidden
-            style="background: rgba(0,0,0,0.9); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; display: none; align-items: center; justify-content: center;">
-            <div style="position: relative; max-width: 90%; max-height: 90%;">
-                <button id="close-preview-zoom" style="position: absolute; top: -40px; right: 0; background: none; border: none; color: #fff; font-size: 2.5rem; cursor: pointer;">&times;</button>
-                <img id="preview-zoom-img" src="" style="max-width: 100%; max-height: 90vh; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+                <!-- NEW: Preview Image Modal for Dashboard -->
+                <div id="preview-zoom-modal" class="modal-overlay" hidden
+                    style="background: rgba(0,0,0,0.9); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; display: none; align-items: center; justify-content: center;">
+                    <div style="position: relative; max-width: 90%; max-height: 90%;">
+                        <button id="close-preview-zoom"
+                            style="position: absolute; top: -40px; right: 0; background: none; border: none; color: #fff; font-size: 2.5rem; cursor: pointer;">&times;</button>
+                        <img id="preview-zoom-img" src=""
+                            style="max-width: 100%; max-height: 90vh; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
         </div>
 
     </div>
@@ -474,7 +479,7 @@
                         if (confirm("Zweite Bestätigung: Sollen wirklich ALLE Daten (Emails, Auswahlen, Links) gelöscht werden?")) {
                             btnDeleteAll.disabled = true;
                             btnDeleteAll.textContent = "LÖSCHT...";
-                            
+
                             try {
                                 const projects = await window.selectService.getAllProjects();
                                 let deleted = 0;
@@ -545,8 +550,33 @@
                     img.style.height = '100%';
                     img.style.objectFit = 'cover';
 
-                    // Define Zoom Action
-                    const openZoom = (e) => {
+                    // Toolbar Overlay (Visible on hover via CSS in style.css or inline-style approach here)
+                    const toolbar = document.createElement('div');
+                    toolbar.style.position = 'absolute';
+                    toolbar.style.top = '0';
+                    toolbar.style.left = '0';
+                    toolbar.style.right = '0';
+                    toolbar.style.bottom = '0';
+                    toolbar.style.background = 'rgba(0,0,0,0.4)';
+                    toolbar.style.display = 'flex';
+                    toolbar.style.justifyContent = 'center';
+                    toolbar.style.alignItems = 'center';
+                    toolbar.style.gap = '10px';
+                    toolbar.style.opacity = '0'; // Hidden by default
+                    toolbar.style.transition = 'opacity 0.2s';
+                    toolbar.onmouseenter = () => toolbar.style.opacity = '1';
+                    toolbar.onmouseleave = () => toolbar.style.opacity = '0';
+
+                    // Zoom Button (Eye Icon)
+                    const zoomBtn = document.createElement('button');
+                    zoomBtn.innerHTML = '👁️';
+                    zoomBtn.style.background = 'white';
+                    zoomBtn.style.border = 'none';
+                    zoomBtn.style.borderRadius = '50%';
+                    zoomBtn.style.width = '30px';
+                    zoomBtn.style.height = '30px';
+                    zoomBtn.style.cursor = 'pointer';
+                    zoomBtn.onclick = (e) => {
                         e.stopPropagation();
                         const zoomModal = document.getElementById('preview-zoom-modal');
                         const zoomImg = document.getElementById('preview-zoom-img');
@@ -555,66 +585,36 @@
                         zoomModal.hidden = false;
                     };
 
-                    img.style.cursor = 'zoom-in';
-                    img.onclick = openZoom;
-
-                    // Toolbar Overlay (Visible on hover)
-                    const toolbar = document.createElement('div');
-                    toolbar.style.position = 'absolute';
-                    toolbar.style.top = '0';
-                    toolbar.style.left = '0';
-                    toolbar.style.right = '0';
-                    toolbar.style.bottom = '0';
-                    toolbar.style.background = 'rgba(0,0,0,0.3)';
-                    toolbar.style.display = 'flex';
-                    toolbar.style.justifyContent = 'center';
-                    toolbar.style.alignItems = 'center';
-                    toolbar.style.opacity = '0'; 
-                    toolbar.style.transition = 'opacity 0.2s';
-                    toolbar.style.cursor = 'zoom-in';
-                    toolbar.onmouseenter = () => toolbar.style.opacity = '1';
-                    toolbar.onmouseleave = () => toolbar.style.opacity = '0';
-                    toolbar.onclick = openZoom; // Entire toolbar (except buttons) zooms too
-
                     // Delete Button (X)
                     const delBtn = document.createElement('button');
                     delBtn.innerHTML = '&times;';
-                    delBtn.style.position = 'absolute';
-                    delBtn.style.top = '5px';
-                    delBtn.style.right = '5px';
                     delBtn.style.background = '#ff4444';
                     delBtn.style.color = 'white';
                     delBtn.style.border = 'none';
                     delBtn.style.borderRadius = '50%';
-                    delBtn.style.width = '24px';
-                    delBtn.style.height = '24px';
+                    delBtn.style.width = '30px';
+                    delBtn.style.height = '30px';
                     delBtn.style.cursor = 'pointer';
                     delBtn.style.fontSize = '18px';
                     delBtn.style.lineHeight = '1';
-                    delBtn.style.zIndex = '10';
                     delBtn.onclick = (e) => {
                         e.stopPropagation();
                         selectedFiles.splice(index, 1);
                         renderPreviews();
                     };
 
+                    toolbar.appendChild(zoomBtn);
                     toolbar.appendChild(delBtn);
                     wrapper.appendChild(img);
                     wrapper.appendChild(toolbar);
                     grid.appendChild(wrapper);
                 });
 
-                // Zoom Modal Close Handlers (Button + Backdrop)
-                const zoomModal = document.getElementById('preview-zoom-modal');
+                // Zoom Modal Close Handler
                 document.getElementById('close-preview-zoom').onclick = () => {
+                    const zoomModal = document.getElementById('preview-zoom-modal');
                     zoomModal.style.display = 'none';
                     zoomModal.hidden = true;
-                };
-                zoomModal.onclick = (e) => {
-                    if (e.target === zoomModal) {
-                        zoomModal.style.display = 'none';
-                        zoomModal.hidden = true;
-                    }
                 };
 
                 previewArea.appendChild(grid);
@@ -734,7 +734,7 @@
                             </div>
                             <div style="font-size: 0.85rem; color: #aaa; margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 8px;">
                                 <span title="Paket-Größe">📦 ${packageCounts[p.packageSize] || p.packageSize || '0'} Bilder</span> • 
-                                <span title="Gesamtanzahl Retuschen">🖌️ ${ (packageCounts[p.packageSize] || 0) > 0 ? ( (p.packageSize == 0 ? 0 : (p.packageSize == 1 ? 1 : (p.packageSize == 2 ? 2 : (p.packageSize == 3 ? 3 : 4)))) + (p.extraRetouches || 0) ) : (p.extraRetouches || 0) } Retuschen</span>
+                                <span title="Gesamtanzahl Retuschen">🖌️ ${(packageCounts[p.packageSize] || 0) > 0 ? ((p.packageSize == 0 ? 0 : (p.packageSize == 1 ? 1 : (p.packageSize == 2 ? 2 : (p.packageSize == 3 ? 3 : 4)))) + (p.extraRetouches || 0)) : (p.extraRetouches || 0)} Retuschen</span>
                             </div>
                             
                             <div class="gallery-footer" style="display:flex; gap:10px;">
@@ -887,7 +887,7 @@
                     document.getElementById('detail-package').textContent = `${project.packageSize} Bilder`;
                     document.getElementById('detail-status').textContent = project.status;
                     document.getElementById('detail-project-id').textContent = `ID: ${project.id}`;
-                    
+
                     const baseRetouches = project.packageSize || 0;
                     const extraRetouches = project.extraRetouches || 0;
                     document.getElementById('detail-retouch-info').textContent = `Retuschen: ${baseRetouches} inkl. + ${extraRetouches} Extra`;
@@ -995,10 +995,10 @@
                                 btnDelete.style.background = "var(--color-danger)";
                                 btnDelete.style.color = "#fff";
                                 btnDelete.style.padding = "5px 15px";
-                                
+
                                 // Auto-reset after 3 seconds
                                 setTimeout(() => {
-                                    if(btnDelete && btnDelete.textContent.includes("SICHER")) {
+                                    if (btnDelete && btnDelete.textContent.includes("SICHER")) {
                                         btnDelete.textContent = "PROJEKT LÖSCHEN";
                                         btnDelete.style.background = "transparent";
                                         btnDelete.style.color = "var(--color-danger)";

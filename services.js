@@ -367,11 +367,28 @@ class SelectStudioService {
         if (type === 'UPLOAD_READY') {
             templateParams.subject = "Deine Galerie ist online! 📸";
             
-            // Clean text without manual "Hey" (already in template)
-            templateParams.message = `Vielen Dank für deine Buchung und dein Vertrauen.\n\nDeine Galerie ist bereit!\n\nWähle jetzt deine Favoriten für die finale Retusche:`;
+            // This HTML will be rendered by {{{message}}} in the EmailJS Template
+            templateParams.message = `
+                <p>Vielen Dank für deine Buchung und dein Vertrauen.</p>
+                <p>Deine Galerie ist bereit!<br>
+                Wähle jetzt deine Favoriten für die finale Retusche:</p>
+                
+                <p style="margin: 30px 0; text-align: center;">
+                    <a href="${galleryUrl}" 
+                       style="display: inline-block; padding: 12px 24px; background-color: #000; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold; font-family: sans-serif;">
+                        Galerie ansehen
+                    </a>
+                </p>
+
+                <p>Die retuschierten Bilder erhältst du innerhalb von 48 Stunden.<br>
+                Weitere Bilder können auf Wunsch gegen Aufpreis retuschiert werden.</p>
+                <p>Ich freue mich auf deine Auswahl.</p>
+                <p>Liebe Grüsse<br>
+                Nora<br>
+                NOWA Studio</p>
+            `;
             
-            templateParams.message2 = `Die retuschierten Bilder erhältst du innerhalb von 48 Stunden.\nWeitere Bilder können auf Wunsch gegen Aufpreis retuschiert werden.\n\nIch freue mich auf deine Auswahl.\n\nLiebe Grüsse\nNora\nNOWA Studio`;
-            
+            templateParams.message2 = ""; // Not used with the triple-brace HTML method
             templateParams.link_action = galleryUrl;
             templateParams.btn_text = "Galerie ansehen";
         }
