@@ -62,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
         lightbox: document.getElementById('lightbox'),
         lbImg: document.getElementById('lb-img'),
         lbClose: document.getElementById('lb-close'),
+        lbDownload: document.getElementById('lb-download-btn'),
         lbPrev: document.getElementById('lb-prev'),
         lbNext: document.getElementById('lb-next'),
         lbSelectBtn: document.getElementById('lb-select-btn'),
@@ -1069,6 +1070,18 @@ document.addEventListener('DOMContentLoaded', () => {
         updateLightboxImage();
         elements.lightbox.hidden = false;
         updateLightboxButton();
+
+        // Wire up persistent download button in header
+        if (elements.lbDownload) {
+            const asset = state.currentAssets[index];
+            const newDlBtn = elements.lbDownload.cloneNode(true);
+            elements.lbDownload.parentNode.replaceChild(newDlBtn, elements.lbDownload);
+            elements.lbDownload = newDlBtn;
+            elements.lbDownload.onclick = (e) => {
+                e.stopPropagation();
+                forceDownload(asset.url, asset.name || `Image_${index + 1}.jpg`);
+            };
+        }
     }
 
     function closeLightbox() {

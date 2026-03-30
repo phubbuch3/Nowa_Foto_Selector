@@ -415,7 +415,18 @@
                             Abschließen</button>
                     </div>
                 </div>
+                <!-- Project Detail Modal -->
+        ...
+
+        <!-- NEW: Preview Image Modal for Dashboard -->
+        <div id="preview-zoom-modal" class="modal-overlay" hidden
+            style="background: rgba(0,0,0,0.9); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; display: none; align-items: center; justify-content: center;">
+            <div style="position: relative; max-width: 90%; max-height: 90%;">
+                <button id="close-preview-zoom" style="position: absolute; top: -40px; right: 0; background: none; border: none; color: #fff; font-size: 2.5rem; cursor: pointer;">&times;</button>
+                <img id="preview-zoom-img" src="" style="max-width: 100%; max-height: 90vh; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
             </div>
+        </div>
+    </div>
         </div>
 
     </div>
@@ -524,43 +535,82 @@
                     const wrapper = document.createElement('div');
                     wrapper.style.position = 'relative';
                     wrapper.style.aspectRatio = '1';
+                    wrapper.style.borderRadius = '4px';
+                    wrapper.style.overflow = 'hidden';
+                    wrapper.className = 'preview-wrapper';
 
                     const img = document.createElement('img');
                     img.src = URL.createObjectURL(file);
                     img.style.width = '100%';
                     img.style.height = '100%';
                     img.style.objectFit = 'cover';
-                    img.style.borderRadius = '4px';
 
-                    const delBtn = document.createElement('button');
-                    delBtn.innerHTML = '&times;';
-                    delBtn.style.position = 'absolute';
-                    delBtn.style.top = '4px';
-                    delBtn.style.left = '4px';
-                    delBtn.style.background = 'rgba(255, 0, 0, 0.8)';
-                    delBtn.style.color = '#fff';
-                    delBtn.style.border = 'none';
-                    delBtn.style.borderRadius = '50%';
-                    delBtn.style.width = '20px';
-                    delBtn.style.height = '20px';
-                    delBtn.style.cursor = 'pointer';
-                    delBtn.style.display = 'flex';
-                    delBtn.style.alignItems = 'center';
-                    delBtn.style.justifyContent = 'center';
-                    delBtn.style.fontSize = '14px';
-                    delBtn.style.lineHeight = '1';
-                    
-                    delBtn.onclick = (e) => {
+                    // Toolbar Overlay (Visible on hover via CSS in style.css or inline-style approach here)
+                    const toolbar = document.createElement('div');
+                    toolbar.style.position = 'absolute';
+                    toolbar.style.top = '0';
+                    toolbar.style.left = '0';
+                    toolbar.style.right = '0';
+                    toolbar.style.bottom = '0';
+                    toolbar.style.background = 'rgba(0,0,0,0.4)';
+                    toolbar.style.display = 'flex';
+                    toolbar.style.justifyContent = 'center';
+                    toolbar.style.alignItems = 'center';
+                    toolbar.style.gap = '10px';
+                    toolbar.style.opacity = '0'; // Hidden by default
+                    toolbar.style.transition = 'opacity 0.2s';
+                    toolbar.onmouseenter = () => toolbar.style.opacity = '1';
+                    toolbar.onmouseleave = () => toolbar.style.opacity = '0';
+
+                    // Zoom Button (Eye Icon)
+                    const zoomBtn = document.createElement('button');
+                    zoomBtn.innerHTML = '👁️';
+                    zoomBtn.style.background = 'white';
+                    zoomBtn.style.border = 'none';
+                    zoomBtn.style.borderRadius = '50%';
+                    zoomBtn.style.width = '30px';
+                    zoomBtn.style.height = '30px';
+                    zoomBtn.style.cursor = 'pointer';
+                    zoomBtn.onclick = (e) => {
                         e.stopPropagation();
-                        e.preventDefault();
-                        selectedFiles.splice(index, 1);
-                        renderPreviews(); // Re-render
+                        const zoomModal = document.getElementById('preview-zoom-modal');
+                        const zoomImg = document.getElementById('preview-zoom-img');
+                        zoomImg.src = img.src;
+                        zoomModal.style.display = 'flex';
+                        zoomModal.hidden = false;
                     };
 
+                    // Delete Button (X)
+                    const delBtn = document.createElement('button');
+                    delBtn.innerHTML = '&times;';
+                    delBtn.style.background = '#ff4444';
+                    delBtn.style.color = 'white';
+                    delBtn.style.border = 'none';
+                    delBtn.style.borderRadius = '50%';
+                    delBtn.style.width = '30px';
+                    delBtn.style.height = '30px';
+                    delBtn.style.cursor = 'pointer';
+                    delBtn.style.fontSize = '18px';
+                    delBtn.style.lineHeight = '1';
+                    delBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        selectedFiles.splice(index, 1);
+                        renderPreviews();
+                    };
+
+                    toolbar.appendChild(zoomBtn);
+                    toolbar.appendChild(delBtn);
                     wrapper.appendChild(img);
-                    wrapper.appendChild(delBtn);
+                    wrapper.appendChild(toolbar);
                     grid.appendChild(wrapper);
                 });
+
+                // Zoom Modal Close Handler
+                document.getElementById('close-preview-zoom').onclick = () => {
+                    const zoomModal = document.getElementById('preview-zoom-modal');
+                    zoomModal.style.display = 'none';
+                    zoomModal.hidden = true;
+                };
 
                 previewArea.appendChild(grid);
             }
