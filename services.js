@@ -203,7 +203,7 @@ class SelectStudioService {
                 // Format is usually .../b/BUCKET/o/PATH?alt=media...
                 const decodedUrl = decodeURIComponent(asset.url);
                 const pathPart = decodedUrl.split('/o/')[1].split('?')[0];
-                
+
                 const fileRef = this.storage.ref().child(pathPart);
                 await fileRef.delete();
                 console.log(`Deleted from Storage: ${pathPart}`);
@@ -366,16 +366,16 @@ class SelectStudioService {
         // Configure Message based on Type
         if (type === 'UPLOAD_READY') {
             templateParams.subject = "Deine Galerie ist online! 📸";
-            
+
             // This HTML will be rendered by {{{message}}} in the EmailJS Template
             templateParams.message = `
                 <p>Vielen Dank für deine Buchung und dein Vertrauen.</p>
                 <p>Deine Galerie ist bereit!<br>
                 Wähle jetzt deine Favoriten für die finale Retusche:</p>
                 
-                <p style="margin: 30px 0; text-align: left;">
+                <p style="margin: 5px 0; text-align: left;">
                     <a href="${galleryUrl}" 
-                       style="display: inline-block; padding: 12px 24px; background-color: #000; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold; font-family: sans-serif;">
+                       style="display: inline-block; padding: 6px 12px; background-color: #000; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold; font-family: sans-serif;">
                         Galerie ansehen
                     </a>
                 </p>
@@ -387,7 +387,7 @@ class SelectStudioService {
                 Nora<br>
                 NOWA Studio</p>
             `;
-            
+
             templateParams.message2 = ""; // Not used with the triple-brace HTML method
             templateParams.link_action = galleryUrl;
             templateParams.btn_text = "Galerie ansehen";
