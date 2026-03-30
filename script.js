@@ -199,6 +199,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     state.maxSelection = 0;
 
                     if (elements.galleryTitle) elements.galleryTitle.textContent = "Deine fertigen Bilder ✨";
+                    
+                    // Hide Share Button for Customers
+                    if (elements.btnShare) elements.btnShare.style.display = 'none';
+
+                    // Add Download All Button in Top Bar (beside former share)
+                    const actions = document.querySelector('.gallery-actions');
+                    let dlAllBtn = document.getElementById('customer-dl-all');
+                    if (!dlAllBtn) {
+                        dlAllBtn = document.createElement('button');
+                        dlAllBtn.id = 'customer-dl-all';
+                        dlAllBtn.className = 'btn-primary';
+                        dlAllBtn.style.padding = '8px 16px';
+                        dlAllBtn.textContent = "Alle herunterladen";
+                        dlAllBtn.onclick = () => downloadAllAssets();
+                        if (actions) actions.prepend(dlAllBtn);
+                    }
+
                     setupDownloadUI(project);
                     renderGrid(state.currentAssets, "FINAL");
                 }
@@ -953,29 +970,34 @@ document.addEventListener('DOMContentLoaded', () => {
             card.append(idBadge);
 
 
-            // In Download Mode OR Final View (Admin)
-            if (state.mode === 'download' || labelPrefix === 'FINAL') {
-                // Add Download Button Overlay
-                const dlOverlay = document.createElement('div');
-                dlOverlay.style.position = 'absolute';
-                dlOverlay.style.bottom = '10px';
-                dlOverlay.style.right = '10px';
-                dlOverlay.style.background = 'rgba(0,0,0,0.7)';
-                dlOverlay.style.color = '#fff';
-                dlOverlay.style.padding = '5px 10px';
-                dlOverlay.style.borderRadius = '4px';
-                dlOverlay.style.fontSize = '0.8rem';
-                dlOverlay.style.cursor = 'pointer'; // Make it look clickable
-                dlOverlay.style.pointerEvents = 'auto'; // Ensure it receives clicks
-                dlOverlay.textContent = 'Herunterladen';
-
-                dlOverlay.onclick = (e) => {
-                    e.stopPropagation(); // Stop Lightbox
-                    forceDownload(asset.url, asset.name || `Final_${index + 1}.jpg`);
-                };
-
-                card.append(dlOverlay);
-            }
+            // Always show Download Icon on every image (Top Right)
+            const dlIcon = document.createElement('div');
+            dlIcon.style.position = 'absolute';
+            dlIcon.style.top = '10px';
+            dlIcon.style.right = '10px';
+            dlIcon.style.background = 'rgba(0,0,0,0.6)';
+            dlIcon.style.color = '#fff';
+            dlIcon.style.width = '32px';
+            dlIcon.style.height = '32px';
+            dlIcon.style.borderRadius = '50%';
+            dlIcon.style.display = 'flex';
+            dlIcon.style.alignItems = 'center';
+            dlIcon.style.justifyContent = 'center';
+            dlIcon.style.cursor = 'pointer';
+            dlIcon.style.zIndex = '10';
+            dlIcon.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+            `;
+            dlIcon.title = "Bild herunterladen";
+            dlIcon.onclick = (e) => {
+                e.stopPropagation();
+                forceDownload(asset.url, asset.name || `Image_${index + 1}.jpg`);
+            };
+            card.append(dlIcon);
 
             // Admin: Show Original Filename
             if (state.currentUser) {
@@ -1102,14 +1124,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             elements.lbSelectBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                // Download Link
-                const link = document.createElement('a');
-                link.href = asset.url;
-                link.download = asset.name || `Final_${asset.id}.jpg`;
-                link.target = '_blank';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                forceDownload(asset.url, asset.name || `Final_${asset.id}.jpg`);
             });
             return;
         }
