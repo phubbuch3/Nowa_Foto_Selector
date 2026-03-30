@@ -35,6 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Header Actions
         btnShare: document.getElementById('btn-share'),
         adminLink: document.getElementById('admin-link'),
+        btnAdminSubmit: document.getElementById('btn-admin-submit'),
+        adminSubmitContainer: document.getElementById('admin-submit-container'),
 
         // Admin FAB
         adminFab: document.getElementById('admin-upload-fab'),
@@ -1420,6 +1422,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 elements.btnRemoveRetouch.style.background = 'var(--color-text)'; // White
                 elements.btnRemoveRetouch.style.cursor = 'pointer';
             }
+        }
+
+        // --- Admin Submit Button (Retuschen übermitteln) ---
+        if (state.currentUser && state.project && state.project.status === 'PROCESSING') {
+            if (elements.adminSubmitContainer) elements.adminSubmitContainer.style.display = 'block';
+            if (elements.btnAdminSubmit) {
+                elements.btnAdminSubmit.onclick = async () => {
+                    if (!confirm("Retuschen jetzt final übermitteln und Mail an Kunden senden?")) return;
+                    
+                    try {
+                        elements.btnAdminSubmit.disabled = true;
+                        elements.btnAdminSubmit.textContent = "Übermittelt...";
+                        
+                        // 1. Send Mail
+                        await window.selectService.sendMail('FINAL_DELIVERY', state.project);
+                        
+                        // 2. Set Status to COMPLETED
+                        await window.selectService.updateProjectStatus(state.projectId, 'COMPLETED');
+                        
+                        alert("Bilder erfolgreich übermittelt!");
+                        window.location.reload(); // Refresh to show completed view
+                    } catch (e) {
+                        alert("Fehler: " + e.message);
+                        elements.btnAdminSubmit.disabled = false;
+                        elements.btnAdminSubmit.textContent = "Retuschen übermitteln";
+                    }
+                };
+            }
+        } else {
+            if (elements.adminSubmitContainer) elements.adminSubmitContainer.style.display = 'none';
         }
     }
 
