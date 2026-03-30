@@ -143,45 +143,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (user) {
                     // --- Admin View ---
                     state.mode = 'view';
-                    state.currentAssets = project.finalAssets || [];
+                    state.currentAssets = project.assets || [];
 
                     if (elements.galleryTitle) {
-                        elements.galleryTitle.innerHTML = `Finale Bilder <span style="font-size:0.7rem; background:#fff; color:#000; padding:2px 4px; border-radius:4px; vertical-align:middle;">ADMIN</span>`;
+                        elements.galleryTitle.innerHTML = `Projekt Archiv <span style="font-size:0.7rem; background:#fff; color:#000; padding:2px 4px; border-radius:4px; vertical-align:middle;">ADMIN</span>`;
                     }
 
-                    // Add Toggle Button for Admin to switch to RAW
+                    // Download All Button for Admin
                     const actions = document.querySelector('.gallery-actions');
-                    let toggleBtn = document.getElementById('admin-toggle-view');
-
-                    // Remove existing if any (to prevent duplicates)
-                    if (toggleBtn) toggleBtn.remove();
-
-                    toggleBtn = document.createElement('button');
-                    toggleBtn.id = 'admin-toggle-view';
-                    toggleBtn.className = 'btn-secondary';
-                    toggleBtn.style.marginRight = '10px';
-                    toggleBtn.textContent = "Originale anzeigen";
-
-                    toggleBtn.onclick = () => {
-                        // Toggle Logic
-                        if (toggleBtn.textContent.includes("Originale")) {
-                            // Switch to Originals
-                            state.currentAssets = project.assets || [];
-                            renderGrid(state.currentAssets, "ORIGINAL");
-                            toggleBtn.textContent = "Finale anzeigen";
-                            elements.galleryTitle.innerHTML = `Original Bilder <span style="font-size:0.7rem; background:#fff; color:#000; padding:2px 4px; border-radius:4px; vertical-align:middle;">ADMIN</span>`;
-                        } else {
-                            // Switch to Finals
-                            state.currentAssets = project.finalAssets || [];
-                            renderGrid(state.currentAssets, "FINAL");
-                            toggleBtn.textContent = "Originale anzeigen";
-                            elements.galleryTitle.innerHTML = `Finale Bilder <span style="font-size:0.7rem; background:#fff; color:#000; padding:2px 4px; border-radius:4px; vertical-align:middle;">ADMIN</span>`;
-                        }
-                    };
-
-                    if (actions) actions.prepend(toggleBtn);
-
-                    // NEW: Download All Button for Admin
                     let dlAllBtn = document.getElementById('admin-dl-all');
                     if (dlAllBtn) dlAllBtn.remove();
 
@@ -191,22 +160,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     dlAllBtn.textContent = "Alle Herunterladen";
                     dlAllBtn.onclick = () => downloadAllAssets();
 
-                    if (actions) actions.prepend(dlAllBtn); // Order: DL All, Toggle, Share
+                    if (actions) actions.prepend(dlAllBtn);
 
-                    renderGrid(state.currentAssets, "FINAL");
+                    renderGrid(state.currentAssets, "BILD");
 
                 } else {
-                    // --- Customer View: Finals Download ---
+                    // --- Customer View: Download Mode ---
                     state.mode = 'download';
-                    state.currentAssets = project.finalAssets || [];
+                    state.currentAssets = project.assets || [];
                     state.maxSelection = 0;
 
-                    if (elements.galleryTitle) elements.galleryTitle.textContent = "Deine fertigen Bilder ✨";
+                    if (elements.galleryTitle) elements.galleryTitle.textContent = "Deine Galerie ✨";
                     
                     // Hide Share Button for Customers
                     if (elements.btnShare) elements.btnShare.style.display = 'none';
 
-                    // Add Download All Button in Top Bar (beside former share)
+                    // Add Download All Button in Top Bar
                     const actions = document.querySelector('.gallery-actions');
                     let dlAllBtn = document.getElementById('customer-dl-all');
                     if (!dlAllBtn) {
@@ -220,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     setupDownloadUI(project);
-                    renderGrid(state.currentAssets, "FINAL");
+                    renderGrid(state.currentAssets, "BILD");
                 }
             } else {
                 // --- Normal Selection Flow ---
