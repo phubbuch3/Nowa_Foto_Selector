@@ -1429,6 +1429,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (elements.adminSubmitContainer) elements.adminSubmitContainer.style.display = 'block';
             if (elements.btnAdminSubmit) {
                 elements.btnAdminSubmit.onclick = async () => {
+                    // Check if there are any retouched images in the project assets
+                    const hasRetouchedImages = (state.project.assets || []).some(a => a.type === 'RETUSCHIERT');
+                    
+                    if (!hasRetouchedImages) {
+                        alert("Du hast noch keine Bilder als 'Retuschiert' hochgeladen. Bitte lade zuerst die fertigen Bilder hoch, bevor du sie an den Kunden übermittelst.");
+                        return;
+                    }
+
                     if (!confirm("Retuschen jetzt final übermitteln und Mail an Kunden senden?")) return;
                     
                     try {
