@@ -671,11 +671,19 @@
                 grid.style.display = 'grid'; // Ensure grid display
 
                 const packageNames = {
-                    0: 'Basic',
-                    1: 'Standard',
-                    2: 'Advanced',
-                    3: 'Premium',
-                    4: 'Portrait'
+                    0: "Basic Paket",
+                    1: "Standard",
+                    2: "Advanced",
+                    3: "Premium",
+                    4: "Persönliche Portraits"
+                };
+
+                const packageCounts = {
+                    0: 5,
+                    1: 12,
+                    2: 20,
+                    3: 30,
+                    4: 35
                 };
 
                 filtered.forEach(p => {
@@ -719,9 +727,9 @@
 
                                 <span class="gallery-date" style="font-size:0.8rem; color:#888;">${date}</span>
                             </div>
-                            <div style="font-size: 0.85rem; color: #aaa; margin-bottom: 15px;">
-                                <span>📦 ${p.packageSize || '-'} Bilder</span> • 
-                                <span>🖼️ ${p.assets ? p.assets.length : 0} Uploads</span>
+                            <div style="font-size: 0.85rem; color: #aaa; margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 8px;">
+                                <span title="Paket-Größe">📦 ${packageCounts[p.packageSize] || p.packageSize || '0'} Bilder</span> • 
+                                <span title="Gesamtanzahl Retuschen">🖌️ ${ (packageCounts[p.packageSize] || 0) > 0 ? ( (p.packageSize == 0 ? 0 : (p.packageSize == 1 ? 1 : (p.packageSize == 2 ? 2 : (p.packageSize == 3 ? 3 : 4)))) + (p.extraRetouches || 0) ) : (p.extraRetouches || 0) } Retuschen</span>
                             </div>
                             
                             <div class="gallery-footer" style="display:flex; gap:10px;">
