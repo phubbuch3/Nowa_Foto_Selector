@@ -378,9 +378,11 @@
                         <span class="label-small">Paket</span><br>
                         <span id="detail-package">-</span>
                     </div>
-                    <div>
-                        <span class="label-small">Status</span><br>
-                        <span id="detail-status">-</span>
+                    <div style="flex: 2;">
+                        <span class="label-small">Status & Infos</span><br>
+                        <span id="detail-status" style="font-weight: bold;">-</span><br>
+                        <span id="detail-project-id" style="font-size: 0.7rem; color: #888;">ID: -</span><br>
+                        <span id="detail-retouch-info" style="font-size: 0.75rem; color: #aaa;">Retuschen: 0 + 0 Extra</span>
                     </div>
                 </div>
 
@@ -821,6 +823,11 @@
                     document.getElementById('detail-email').textContent = project.email;
                     document.getElementById('detail-package').textContent = `${project.packageSize} Bilder`;
                     document.getElementById('detail-status').textContent = project.status;
+                    document.getElementById('detail-project-id').textContent = `ID: ${project.id}`;
+                    
+                    const baseRetouches = project.packageSize || 0;
+                    const extraRetouches = project.extraRetouches || 0;
+                    document.getElementById('detail-retouch-info').textContent = `Retuschen: ${baseRetouches} inkl. + ${extraRetouches} Extra`;
 
                     // Render Grid
                     const grid = document.getElementById('detail-grid');
