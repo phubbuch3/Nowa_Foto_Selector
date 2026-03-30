@@ -367,7 +367,7 @@ class SelectStudioService {
         if (type === 'UPLOAD_READY') {
             templateParams.subject = "Deine Galerie ist online! 📸";
             
-            // Matches user's new EmailJS template ({{message}} -> Button/Link -> {{message2}})
+            // Clean text without manual "Hey" (already in template)
             templateParams.message = `Vielen Dank für deine Buchung und dein Vertrauen.\n\nDeine Galerie ist bereit!\n\nWähle jetzt deine Favoriten für die finale Retusche:`;
             
             templateParams.message2 = `Die retuschierten Bilder erhältst du innerhalb von 48 Stunden.\nWeitere Bilder können auf Wunsch gegen Aufpreis retuschiert werden.\n\nIch freue mich auf deine Auswahl.\n\nLiebe Grüsse\nNora\nNOWA Studio`;
@@ -377,31 +377,29 @@ class SelectStudioService {
         }
         else if (type === 'SELECTION_DONE') {
             // Switch recipient to Admin
-            templateParams.email = templateParams.admin_email; // IMPORTANT: Overwrite 'email'
+            templateParams.email = templateParams.admin_email;
             templateParams.to_name = "Admin";
-            templateParams.name = "Admin";
 
             templateParams.subject = `Kunde ${project.email} hat ausgewählt ✅`;
             templateParams.message = `Der Kunde ${project.email} hat seine Foto- und Retusche-Auswahl getroffen (${Object.keys(project.selections).length} Bilder). Du kannst die Bilder über diesen Link herunterladen und bearbeiten.`;
-            templateParams.message2 = ""; // Reset for safety
+            templateParams.message2 = "";
 
-            // Fix: Deep link to specific project in Admin Dashboard
             templateParams.link_action = `${adminUrl}?projectId=${project.id}`;
             templateParams.btn_text = "Zur Bearbeitung (Admin)";
         }
         else if (type === 'FINAL_DELIVERY') {
             templateParams.subject = "Deine fertigen Bilder sind da! ✨";
-            // User Request: "bedanken das er NOWA Studio ausgewählt hat und viel spass mit den bildern"
             templateParams.message = `Vielen Dank, dass du dich für NOWA Studio entschieden hast! Wir hoffen, du hast viel Freude mit deinen Bildern.\n\nDu kannst deine fertigen Aufnahmen unter folgendem Link ansehen und herunterladen (für 30 Tage verfügbar).`;
+            templateParams.message2 = "";
             templateParams.link_action = galleryUrl;
             templateParams.btn_text = "Bilder herunterladen";
         }
         else if (type === 'EXTRA_RETOUCH') {
             templateParams.email = templateParams.admin_email;
             templateParams.to_name = "Admin";
-            templateParams.name = "Admin";
             templateParams.subject = `Zusatzkauf: Kunde ${project.email} kauft Retuschen 💰`;
             templateParams.message = `Der Kunde ${project.email} hat soeben zusätzliche Retuschen gekauft! Aktueller Stand extra-gekaufter Retuschen: ${project.extraRetouches} Stück (+ ${project.extraRetouches * 10} CHF).`;
+            templateParams.message2 = "";
             templateParams.link_action = `${adminUrl}?projectId=${project.id}`;
             templateParams.btn_text = "Zur Bearbeitung (Admin)";
         }
