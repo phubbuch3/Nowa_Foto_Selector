@@ -246,8 +246,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     if (elements.submitBtn) elements.submitBtn.disabled = false; // Allow "submitting" an empty selection 
 
-                    // Disable selection
-                    document.body.classList.add('no-selection');
                     if (document.getElementById('selected-list')) {
                         document.getElementById('selected-list').innerHTML = '<div style="padding:10px; color:#888;">Keine Retuschen in diesem Paket enthalten.</div>';
                     }
@@ -387,9 +385,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         state.maxRetouches = state.baseMaxRetouches + state.extraRetouches;
                         state.maxSelection = state.maxRetouches; 
                         
-                        // Handle Basic package (re-enabling selection if they buy first retouch)
+                        // Handle Basic package
                         if (state.maxRetouches > 0) {
-                            document.body.classList.remove('no-selection');
+                            
                         }
 
                         syncAllRetouchCounters();
@@ -432,7 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         // Re-disable selection if they go back to 0
                         if (state.maxRetouches === 0) {
-                            document.body.classList.add('no-selection');
+                            // document.body.classList.add('no-selection');
                         }
 
                         syncAllRetouchCounters();

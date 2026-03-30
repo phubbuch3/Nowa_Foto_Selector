@@ -841,12 +841,3 @@ select {
     pointer-events: none;
     /* Let clicks pass through */
 }
-
-.no-selection .photo-card {
-    pointer-events: none;
-    opacity: 0.8;
-}
-
-.no-selection .photo-card img {
-    cursor: default;
-}
