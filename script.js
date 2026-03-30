@@ -1122,14 +1122,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Handle "No Selection" projects (Basic)
-        if (state.maxSelection === 0 && state.mode === 'edit') {
-            elements.lbSelectBtn.style.display = 'none';
-            return;
-        }
-
         // View Mode: Hide Select Button
-        if (state.mode === 'view') {
+        if (state.mode === 'view' || (state.maxSelection === 0 && state.mode === 'edit')) {
             elements.lbSelectBtn.style.display = 'none';
             return;
         }
