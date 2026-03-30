@@ -448,7 +448,25 @@ class SelectStudioService {
         }
         else if (type === 'REMINDER') {
             templateParams.subject = "Erinnerung: Deine Bilder warten auf dich! 📸";
-            templateParams.message = `Hallo!\n\nDeine fertigen Bilder liegen seit 10 Tagen zur Abholung bereit, wurden aber bisher noch nicht heruntergeladen.\n\nDamit du den Link nicht vergisst, findest du ihn hier noch einmal:`;
+            
+            templateParams.message = `
+                <p>Hallo!</p>
+                <p>Deine fertigen Bilder liegen seit 10 Tagen zur Abholung bereit, wurden aber bisher noch nicht heruntergeladen.</p>
+                <p>Damit du den Link nicht vergisst, findest du ihn hier noch einmal:</p>
+                
+                <p style="margin: 5px 0; text-align: left;">
+                    <a href="${galleryUrl}" 
+                       style="display: inline-block; padding: 6px 12px; background-color: #000; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold; font-family: sans-serif;">
+                        Jetzt herunterladen
+                    </a>
+                </p>
+
+                <p>Ich wünsche dir viel Freude mit den Bildern.</p>
+                <p>Liebe Grüsse<br>
+                Nora<br>
+                NOWA Studio</p>
+            `;
+            
             templateParams.message2 = "";
             templateParams.link_action = galleryUrl;
             templateParams.btn_text = "Jetzt herunterladen";
