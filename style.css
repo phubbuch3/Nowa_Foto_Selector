@@ -22,11 +22,11 @@
     /* 16px */
     --space-m: calc(var(--spacing-unit) * 3);
     /* 24px */
-    --space-l: calc(var(--spacing-unit) * 5);
-    /* 40px */
+    --space-l: calc(var(--spacing-unit) * 4);
+    /* 32px */
 
     /* Layout */
-    --sidebar-width: 320px;
+    --sidebar-width: 340px;
     --grid-gap: var(--space-s);
 }
 
@@ -147,7 +147,7 @@ select {
 
 /* Selection Summary */
 .counter-display {
-    font-size: 3rem;
+    font-size: 2.5rem;
     font-weight: var(--font-weight-light);
     display: flex;
     align-items: baseline;
@@ -164,7 +164,7 @@ select {
 .progress-bar {
     height: 2px;
     background-color: var(--color-border);
-    margin: var(--space-s) 0;
+    margin: var(--space-xs) 0;
     width: 100%;
 }
 
