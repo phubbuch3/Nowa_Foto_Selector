@@ -366,12 +366,11 @@ class SelectStudioService {
         // Configure Message based on Type
         if (type === 'UPLOAD_READY') {
             templateParams.subject = "Deine Galerie ist online! 📸";
-            // Placeholders for template usage
-            templateParams.message_top = `Hey ${templateParams.to_name},\n\nVielen Dank für deine Buchung und dein Vertrauen.\n\nDeine Galerie ist bereit!\n\nWähle jetzt deine Favoriten für die finale Retusche:`;
-            templateParams.message_bottom = `Die retuschierten Bilder erhältst du innerhalb von 48 Stunden.\nWeitere Bilder können auf Wunsch gegen Aufpreis retuschiert werden.\n\nIch freue mich auf deine Auswahl.\n\nLiebe Grüsse\nNora\nNOWA Studio`;
             
-            // Legacy fallback for old generic templates
-            templateParams.message = `${templateParams.message_top}\n\n[LINK]\n\n${templateParams.message_bottom}`;
+            // Matches user's new EmailJS template ({{message}} -> Button -> {{message2}})
+            templateParams.message = `Vielen Dank für deine Buchung und dein Vertrauen.\n\nDeine Galerie ist bereit!\n\nWähle jetzt deine Favoriten für die finale Retusche:`;
+            
+            templateParams.message2 = `Die retuschierten Bilder erhältst du innerhalb von 48 Stunden.\nWeitere Bilder können auf Wunsch gegen Aufpreis retuschiert werden.\n\nIch freue mich auf deine Auswahl.\n\nLiebe Grüsse\nNora\nNOWA Studio`;
             
             templateParams.link_action = galleryUrl;
             templateParams.btn_text = "Galerie ansehen";
