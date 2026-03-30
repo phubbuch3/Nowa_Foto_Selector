@@ -366,28 +366,52 @@ class SelectStudioService {
         // Configure Message based on Type
         if (type === 'UPLOAD_READY') {
             templateParams.subject = "Deine Galerie ist online! 📸";
+            
+            const isBasic = parseInt(project.packageSize) === 0;
 
-            // This HTML will be rendered by {{{message}}} in the EmailJS Template
-            templateParams.message = `
-                <p>Vielen Dank für deine Buchung und dein Vertrauen.</p>
-                <p>Deine Galerie ist bereit!<br>
-                Wähle jetzt deine Favoriten für die finale Retusche:</p>
-                
-                <p style="margin: 5px 0; text-align: left;">
-                    <a href="${galleryUrl}" 
-                       style="display: inline-block; padding: 6px 12px; background-color: #000; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold; font-family: sans-serif;">
-                        Galerie ansehen
-                    </a>
-                </p>
+            if (isBasic) {
+                // Special Text for Basic Package (0 Retouches)
+                templateParams.message = `
+                    <p>Vielen Dank für deine Buchung und dein Vertrauen.</p>
+                    <p>Deine Galerie ist bereit!</p>
+                    <p>Du kannst deine Bilder unter folgendem Link ansehen und herunterladen.</p>
+                    
+                    <p style="margin: 5px 0; text-align: left;">
+                        <a href="${galleryUrl}" 
+                           style="display: inline-block; padding: 6px 12px; background-color: #000; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold; font-family: sans-serif;">
+                            Galerie ansehen
+                        </a>
+                    </p>
 
-                <p>Die retuschierten Bilder erhältst du innerhalb von 48 Stunden.<br>
-                Weitere Bilder können auf Wunsch gegen Aufpreis retuschiert werden.</p>
-                <p>Ich freue mich auf deine Auswahl.</p>
-                <p>Liebe Grüsse<br>
-                Nora<br>
-                NOWA Studio</p>
-            `;
+                    <p>Bilder können auf Wunsch gegen Aufpreis retuschiert werden.</p>
+                    <p>Ich freue mich auf dein Feedback.</p>
+                    <p>Liebe Grüsse<br>
+                    Nora<br>
+                    NOWA Studio</p>
+                `;
+            } else {
+                // Standard Text for all other packages
+                templateParams.message = `
+                    <p>Vielen Dank für deine Buchung und dein Vertrauen.</p>
+                    <p>Deine Galerie ist bereit!<br>
+                    Wähle jetzt deine Favoriten für die finale Retusche:</p>
+                    
+                    <p style="margin: 5px 0; text-align: left;">
+                        <a href="${galleryUrl}" 
+                           style="display: inline-block; padding: 6px 12px; background-color: #000; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold; font-family: sans-serif;">
+                            Galerie ansehen
+                        </a>
+                    </p>
 
+                    <p>Die retuschierten Bilder erhältst du innerhalb von 48 Stunden.<br>
+                    Weitere Bilder können auf Wunsch gegen Aufpreis retuschiert werden.</p>
+                    <p>Ich freue mich auf deine Auswahl.</p>
+                    <p>Liebe Grüsse<br>
+                    Nora<br>
+                    NOWA Studio</p>
+                `;
+            }
+            
             templateParams.message2 = ""; // Not used with the triple-brace HTML method
             templateParams.link_action = galleryUrl;
             templateParams.btn_text = "Galerie ansehen";
