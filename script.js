@@ -1379,11 +1379,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const item = document.createElement('div');
             item.className = 'selected-item';
 
-            // Simplified item list
+            const optionsText = (data.options && data.options.length > 0) 
+                 ? `<div class="item-options" style="font-size: 0.75rem; color: #aaa; margin-top: 4px;">${data.options.join(', ')}</div>`
+                 : '';
+
+            const removeBtn = (state.mode === 'select') 
+                ? `<button class="item-remove" onclick="removeSelectionItem('${id}')">&times;</button>`
+                : '';
+
             item.innerHTML = `
-                <div class="item-header">
-                    <span class="item-id">${id.replace('IMG_', 'BILD ')}</span>
-                    <button class="item-remove" onclick="removeSelectionItem('${id}')">&times;</button>
+                <div class="item-header" style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div style="flex:1;">
+                        <span class="item-id" style="font-weight:bold;">${id.replace('IMG_', 'BILD ')}</span>
+                        ${optionsText}
+                    </div>
+                    ${removeBtn}
                 </div>
             `;
             elements.selectedList.appendChild(item);
