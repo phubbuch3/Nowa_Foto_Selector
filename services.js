@@ -180,15 +180,43 @@ class SelectStudioService {
     }
 
     async deleteProject(projectId) {
-        // Delete Firestore Doc
-        // Note: This does NOT delete files from Storage automatically (requires Cloud Functions or manual list)
-        // For simple usage, we just delete the doc reference.
-
+        // 1. Get project data to find all associated files
         const snapshot = await this.db.collection('projects').where('id', '==', projectId).get();
         if (snapshot.empty) throw new Error('Project not found');
 
-        await snapshot.docs[0].ref.delete();
-        console.log("Project deleted:", projectId);
+        const doc = snapshot.docs[0];
+        const project = doc.data();
+
+        // 2. Identify all assets (Originals and Finals)
+        const allAssets = [
+            ...(project.assets || []),
+            ...(project.finalAssets || [])
+        ];
+
+        console.log(`Deleting project ${projectId} and its ${allAssets.length} assets from Storage...`);
+
+        // 3. Delete each file from Firebase Storage
+        const deletePromises = allAssets.map(async (asset) => {
+            if (!asset.url) return;
+            try {
+                // Extracts the path from a Firebase Storage URL
+                // Format is usually .../b/BUCKET/o/PATH?alt=media...
+                const decodedUrl = decodeURIComponent(asset.url);
+                const pathPart = decodedUrl.split('/o/')[1].split('?')[0];
+                
+                const fileRef = this.storage.ref().child(pathPart);
+                await fileRef.delete();
+                console.log(`Deleted from Storage: ${pathPart}`);
+            } catch (err) {
+                console.warn(`Could not delete file from storage (might be already gone): ${asset.url}`, err);
+            }
+        });
+
+        await Promise.all(deletePromises);
+
+        // 4. Delete Firestore Doc
+        await doc.ref.delete();
+        console.log("Project and all associated Storage files deleted successfully:", projectId);
     }
 
     // --- Selection Operations ---
