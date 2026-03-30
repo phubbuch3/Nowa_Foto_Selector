@@ -126,6 +126,7 @@ class SelectStudioService {
 
         // Triggers
         if (newStatus === 'COMPLETED') {
+            await doc.ref.update({ completedAt: new Date().toISOString() });
             await this.sendMail('FINAL_DELIVERY', project);
         }
 
@@ -149,6 +150,16 @@ class SelectStudioService {
         project.extraRetouches = parseInt(extraCount);
 
         // Note: Email notification for extra retouches is deferred to final submission
+    }
+
+    async logDownload(projectId) {
+        const snapshot = await this.db.collection('projects').where('id', '==', projectId).get();
+        if (snapshot.empty) return;
+        
+        await snapshot.docs[0].ref.update({
+            downloadCount: firebase.firestore.FieldValue.increment(1),
+            lastDownloadedAt: new Date().toISOString()
+        });
     }
 
     // --- Asset Operations ---
@@ -434,6 +445,13 @@ class SelectStudioService {
             templateParams.message2 = "";
             templateParams.link_action = galleryUrl;
             templateParams.btn_text = "Bilder herunterladen";
+        }
+        else if (type === 'REMINDER') {
+            templateParams.subject = "Erinnerung: Deine Bilder warten auf dich! 📸";
+            templateParams.message = `Hallo!\n\nDeine fertigen Bilder liegen seit 10 Tagen zur Abholung bereit, wurden aber bisher noch nicht heruntergeladen.\n\nDamit du den Link nicht vergisst, findest du ihn hier noch einmal:`;
+            templateParams.message2 = "";
+            templateParams.link_action = galleryUrl;
+            templateParams.btn_text = "Jetzt herunterladen";
         }
         else if (type === 'EXTRA_RETOUCH') {
             templateParams.email = templateParams.admin_email;

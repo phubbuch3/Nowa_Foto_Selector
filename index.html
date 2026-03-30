@@ -630,6 +630,34 @@
                 const projects = await window.selectService.getAllProjects();
                 statTotal.textContent = projects.length;
                 renderGalleryGrid(projects);
+
+                // --- CHECK FOR OVERDUE DOWNLOADS (10 Days) ---
+                const now = new Date();
+                const tenDaysMs = 10 * 24 * 60 * 60 * 1000;
+                
+                const overdueProjects = projects.filter(p => {
+                    if (p.status !== 'COMPLETED') return false;
+                    if (p.downloadCount && p.downloadCount > 0) return false;
+                    if (!p.completedAt) return false; // Safety check
+                    
+                    const completedDate = new Date(p.completedAt);
+                    return (now - completedDate) > tenDaysMs;
+                });
+
+                if (overdueProjects.length > 0) {
+                    const emails = overdueProjects.map(p => p.email).join(', ');
+                    if (confirm(`Achtung: ${overdueProjects.length} Kunde(n) haben ihre Bilder seit über 10 Tagen nicht heruntergeladen (${emails}).\n\nMöchtest du ihnen jetzt eine Erinnerungs-Mail senden?`)) {
+                        for (const p of overdueProjects) {
+                            try {
+                                await window.selectService.sendMail('REMINDER', p);
+                                console.log("Reminder sent to:", p.email);
+                            } catch (e) {
+                                console.error("Failed to send reminder to", p.email, e);
+                            }
+                        }
+                        alert("Erinnerungen wurden versendet!");
+                    }
+                }
             }
 
             function renderGalleryGrid(projects) {

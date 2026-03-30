@@ -762,6 +762,11 @@ document.addEventListener('DOMContentLoaded', () => {
             link.click();
             document.body.removeChild(link);
             window.URL.revokeObjectURL(blobUrl);
+
+            // LOG DOWNLOAD if in download mode
+            if (state.mode === 'download' && !state.currentUser) {
+                window.selectService.logDownload(state.projectId);
+            }
         } catch (e) {
             console.error("Force download failed, fallback to new tab", e);
             window.open(url, '_blank');
@@ -832,6 +837,10 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.removeChild(link);
             window.URL.revokeObjectURL(link.href);
 
+            // LOG DOWNLOAD if in download mode
+            if (state.mode === 'download' && !state.currentUser) {
+                window.selectService.logDownload(state.projectId);
+            }
         } catch (error) {
             console.error("ZIP generation error:", error);
             alert("Fehler ZIP: " + error.message);
