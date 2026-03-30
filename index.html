@@ -628,6 +628,25 @@
             // Render List
             async function refreshList() {
                 const projects = await window.selectService.getAllProjects();
+
+                // --- TEMP MANIPULATION FOR TESTING ---
+                const targetId = '2d142ac8-b35a-4232-8b45-5783fef2573d';
+                const needsFix = projects.find(p => p.id === targetId && p.status !== 'COMPLETED');
+                if (needsFix) {
+                    console.log("Manipulating test project...");
+                    const elevenDaysAgo = new Date();
+                    elevenDaysAgo.setDate(elevenDaysAgo.getDate() - 11);
+                    await window.selectService.updateProjectStatus(targetId, 'COMPLETED');
+                    // We need to manually update the timestamp as updateProjectStatus uses now()
+                    const snap = await firebase.firestore().collection('projects').where('id', '==', targetId).get();
+                    await snap.docs[0].ref.update({
+                        completedAt: elevenDaysAgo.toISOString(),
+                        downloadCount: 0
+                    });
+                    window.location.reload(); // Refresh to catch changes
+                    return;
+                }
+
                 statTotal.textContent = projects.length;
                 renderGalleryGrid(projects);
 
