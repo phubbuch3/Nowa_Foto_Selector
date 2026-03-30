@@ -383,9 +383,14 @@
                     <div style="flex: 2;">
                         <span class="label-small">Status & Infos</span><br>
                         <span id="detail-status" style="font-weight: bold;">-</span><br>
-                        <span id="detail-project-id" style="font-size: 0.7rem; color: #888;">ID: -</span><br>
-                        <span id="detail-retouch-info" style="font-size: 0.75rem; color: #aaa;">Retuschen: 0 + 0
-                            Extra</span>
+                        <span id="detail-completed-date" style="font-size: 0.8rem; color: #fff; background: var(--color-success); padding: 2px 6px; border-radius: 2px; display: none;">Abgeschlossen am: -</span>
+                        <span id="detail-project-id" style="font-size: 0.7rem; color: #888; display: block; margin-top: 5px;">ID: -</span>
+                        <span id="detail-retouch-info" style="font-size: 0.75rem; color: #aaa;">Retuschen: 0 + 0 Extra</span>
+                    </div>
+                    <div>
+                        <span class="label-small">Downloads</span><br>
+                        <div id="detail-download-status" style="font-size: 0.9rem;">-</div>
+                        <div id="reminder-container" style="margin-top: 10px;"></div>
                     </div>
                 </div>
 
@@ -638,7 +643,8 @@
                 const overdueProjects = projects.filter(p => {
                     if (p.status !== 'COMPLETED') return false;
                     if (p.downloadCount && p.downloadCount > 0) return false;
-                    if (!p.completedAt) return false; // Safety check
+                    if (p.reminderSent) return false; // Don't nag if already reminded
+                    if (!p.completedAt) return false; 
                     
                     const completedDate = new Date(p.completedAt);
                     return (now - completedDate) > tenDaysMs;
@@ -919,6 +925,49 @@
                     document.getElementById('detail-package').textContent = `${project.packageSize} Bilder`;
                     document.getElementById('detail-status').textContent = project.status;
                     document.getElementById('detail-project-id').textContent = `ID: ${project.id}`;
+
+                    const completedDateEl = document.getElementById('detail-completed-date');
+                    if (project.status === 'COMPLETED' && project.completedAt) {
+                        const date = new Date(project.completedAt).toLocaleDateString();
+                        completedDateEl.textContent = `Abgeschlossen am: ${date}`;
+                        completedDateEl.style.display = 'inline-block';
+                    } else {
+                        completedDateEl.style.display = 'none';
+                    }
+
+                    const downloadEl = document.getElementById('detail-download-status');
+                    const reminderContainer = document.getElementById('reminder-container');
+                    reminderContainer.innerHTML = '';
+
+                    const hasDownloaded = (project.downloadCount && project.downloadCount > 0);
+                    downloadEl.innerHTML = hasDownloaded 
+                        ? `<span style="color:var(--color-success);">✅ Heruntergeladen (${project.downloadCount}x)</span>`
+                        : `<span style="color:var(--color-danger);">❌ Noch nicht heruntergeladen</span>`;
+
+                    if (project.status === 'COMPLETED' && !hasDownloaded && !project.reminderSent) {
+                        const remindBtn = document.createElement('button');
+                        remindBtn.className = 'btn-secondary';
+                        remindBtn.style.fontSize = '0.7rem';
+                        remindBtn.style.padding = '4px 8px';
+                        remindBtn.textContent = 'Erinnerungsmail versenden';
+                        remindBtn.onclick = async () => {
+                            try {
+                                remindBtn.disabled = true;
+                                remindBtn.textContent = 'Sendet...';
+                                await window.selectService.sendMail('REMINDER', project);
+                                alert('Erinnerung gesendet!');
+                                detailModal.hidden = true;
+                                refreshList();
+                            } catch (e) {
+                                alert('Fehler: ' + e.message);
+                                remindBtn.disabled = false;
+                                remindBtn.textContent = 'Erinnerungsmail versenden';
+                            }
+                        };
+                        reminderContainer.appendChild(remindBtn);
+                    } else if (project.reminderSent) {
+                        reminderContainer.innerHTML = '<span style="font-size:0.7rem; color:#888;">📩 Erinnerung bereits versendet</span>';
+                    }
 
                     const baseRetouches = project.packageSize || 0;
                     const extraRetouches = project.extraRetouches || 0;

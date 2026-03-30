@@ -490,7 +490,14 @@ class SelectStudioService {
 
             await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY);
             console.log('✅ Mail sent successfully via EmailJS');
-            // alert("E-Mail erfolgreich gesendet!"); // Optional feedback
+
+            // If this was a reminder, mark it so in the DB
+            if (type === 'REMINDER') {
+                const snapshot = await this.db.collection('projects').where('id', '==', project.id).get();
+                if (!snapshot.empty) {
+                    await snapshot.docs[0].ref.update({ reminderSent: true });
+                }
+            }
         } catch (error) {
             console.error('❌ EmailJS Error:', error);
             // Show exact error to user
