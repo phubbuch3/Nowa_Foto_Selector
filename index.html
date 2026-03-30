@@ -545,33 +545,8 @@
                     img.style.height = '100%';
                     img.style.objectFit = 'cover';
 
-                    // Toolbar Overlay (Visible on hover via CSS in style.css or inline-style approach here)
-                    const toolbar = document.createElement('div');
-                    toolbar.style.position = 'absolute';
-                    toolbar.style.top = '0';
-                    toolbar.style.left = '0';
-                    toolbar.style.right = '0';
-                    toolbar.style.bottom = '0';
-                    toolbar.style.background = 'rgba(0,0,0,0.4)';
-                    toolbar.style.display = 'flex';
-                    toolbar.style.justifyContent = 'center';
-                    toolbar.style.alignItems = 'center';
-                    toolbar.style.gap = '10px';
-                    toolbar.style.opacity = '0'; // Hidden by default
-                    toolbar.style.transition = 'opacity 0.2s';
-                    toolbar.onmouseenter = () => toolbar.style.opacity = '1';
-                    toolbar.onmouseleave = () => toolbar.style.opacity = '0';
-
-                    // Zoom Button (Eye Icon)
-                    const zoomBtn = document.createElement('button');
-                    zoomBtn.innerHTML = '👁️';
-                    zoomBtn.style.background = 'white';
-                    zoomBtn.style.border = 'none';
-                    zoomBtn.style.borderRadius = '50%';
-                    zoomBtn.style.width = '30px';
-                    zoomBtn.style.height = '30px';
-                    zoomBtn.style.cursor = 'pointer';
-                    zoomBtn.onclick = (e) => {
+                    // Define Zoom Action
+                    const openZoom = (e) => {
                         e.stopPropagation();
                         const zoomModal = document.getElementById('preview-zoom-modal');
                         const zoomImg = document.getElementById('preview-zoom-img');
@@ -580,36 +555,66 @@
                         zoomModal.hidden = false;
                     };
 
+                    img.style.cursor = 'zoom-in';
+                    img.onclick = openZoom;
+
+                    // Toolbar Overlay (Visible on hover)
+                    const toolbar = document.createElement('div');
+                    toolbar.style.position = 'absolute';
+                    toolbar.style.top = '0';
+                    toolbar.style.left = '0';
+                    toolbar.style.right = '0';
+                    toolbar.style.bottom = '0';
+                    toolbar.style.background = 'rgba(0,0,0,0.3)';
+                    toolbar.style.display = 'flex';
+                    toolbar.style.justifyContent = 'center';
+                    toolbar.style.alignItems = 'center';
+                    toolbar.style.opacity = '0'; 
+                    toolbar.style.transition = 'opacity 0.2s';
+                    toolbar.style.cursor = 'zoom-in';
+                    toolbar.onmouseenter = () => toolbar.style.opacity = '1';
+                    toolbar.onmouseleave = () => toolbar.style.opacity = '0';
+                    toolbar.onclick = openZoom; // Entire toolbar (except buttons) zooms too
+
                     // Delete Button (X)
                     const delBtn = document.createElement('button');
                     delBtn.innerHTML = '&times;';
+                    delBtn.style.position = 'absolute';
+                    delBtn.style.top = '5px';
+                    delBtn.style.right = '5px';
                     delBtn.style.background = '#ff4444';
                     delBtn.style.color = 'white';
                     delBtn.style.border = 'none';
                     delBtn.style.borderRadius = '50%';
-                    delBtn.style.width = '30px';
-                    delBtn.style.height = '30px';
+                    delBtn.style.width = '24px';
+                    delBtn.style.height = '24px';
                     delBtn.style.cursor = 'pointer';
                     delBtn.style.fontSize = '18px';
                     delBtn.style.lineHeight = '1';
+                    delBtn.style.zIndex = '10';
                     delBtn.onclick = (e) => {
                         e.stopPropagation();
                         selectedFiles.splice(index, 1);
                         renderPreviews();
                     };
 
-                    toolbar.appendChild(zoomBtn);
                     toolbar.appendChild(delBtn);
                     wrapper.appendChild(img);
                     wrapper.appendChild(toolbar);
                     grid.appendChild(wrapper);
                 });
 
-                // Zoom Modal Close Handler
+                // Zoom Modal Close Handlers (Button + Backdrop)
+                const zoomModal = document.getElementById('preview-zoom-modal');
                 document.getElementById('close-preview-zoom').onclick = () => {
-                    const zoomModal = document.getElementById('preview-zoom-modal');
                     zoomModal.style.display = 'none';
                     zoomModal.hidden = true;
+                };
+                zoomModal.onclick = (e) => {
+                    if (e.target === zoomModal) {
+                        zoomModal.style.display = 'none';
+                        zoomModal.hidden = true;
+                    }
                 };
 
                 previewArea.appendChild(grid);
