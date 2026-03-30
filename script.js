@@ -149,17 +149,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         elements.galleryTitle.innerHTML = `Projekt Archiv <span style="font-size:0.7rem; background:#fff; color:#000; padding:2px 4px; border-radius:4px; vertical-align:middle;">ADMIN</span>`;
                     }
 
-                    // Download All Button for Admin
+                    // Universal Download All Button for All Stages
                     const actions = document.querySelector('.gallery-actions');
-                    let dlAllBtn = document.getElementById('admin-dl-all');
+                    let dlAllBtn = document.getElementById('universal-dl-all');
                     if (dlAllBtn) dlAllBtn.remove();
 
                     dlAllBtn = document.createElement('button');
-                    dlAllBtn.id = 'admin-dl-all';
-                    dlAllBtn.className = 'btn-secondary';
+                    dlAllBtn.id = 'universal-dl-all';
+                    dlAllBtn.className = user ? 'btn-secondary' : 'btn-primary';
                     dlAllBtn.textContent = "Alle Herunterladen";
                     dlAllBtn.onclick = () => downloadAllAssets();
-
                     if (actions) actions.prepend(dlAllBtn);
 
                     renderGrid(state.currentAssets, "BILD");
@@ -175,18 +174,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Hide Share Button for Customers
                     if (elements.btnShare) elements.btnShare.style.display = 'none';
 
-                    // Add Download All Button in Top Bar
+                    // Add Universal Download All Button
                     const actions = document.querySelector('.gallery-actions');
-                    let dlAllBtn = document.getElementById('customer-dl-all');
-                    if (!dlAllBtn) {
-                        dlAllBtn = document.createElement('button');
-                        dlAllBtn.id = 'customer-dl-all';
-                        dlAllBtn.className = 'btn-primary';
-                        dlAllBtn.style.padding = '8px 16px';
-                        dlAllBtn.textContent = "Alle herunterladen";
-                        dlAllBtn.onclick = () => downloadAllAssets();
-                        if (actions) actions.prepend(dlAllBtn);
-                    }
+                    let dlAllBtn = document.getElementById('universal-dl-all');
+                    if (dlAllBtn) dlAllBtn.remove();
+                    
+                    dlAllBtn = document.createElement('button');
+                    dlAllBtn.id = 'universal-dl-all';
+                    dlAllBtn.className = 'btn-primary';
+                    dlAllBtn.style.padding = '8px 16px';
+                    dlAllBtn.textContent = "Alle herunterladen";
+                    dlAllBtn.onclick = () => downloadAllAssets();
+                    if (actions) actions.prepend(dlAllBtn);
 
                     setupDownloadUI(project);
                     renderGrid(state.currentAssets, "BILD");
@@ -251,9 +250,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
-                // Hide Bulk Retouch if max selection is small (logic change requested)
+                // Universal Download All Button for Selection/Processing
+                const actions = document.querySelector('.gallery-actions');
+                let dlAllBtn = document.getElementById('universal-dl-all');
+                if (dlAllBtn) dlAllBtn.remove();
+
+                dlAllBtn = document.createElement('button');
+                dlAllBtn.id = 'universal-dl-all';
+                dlAllBtn.className = 'btn-secondary';
+                dlAllBtn.style.fontSize = '0.8rem';
+                dlAllBtn.textContent = "Alle herunterladen";
+                dlAllBtn.onclick = () => downloadAllAssets();
+                if (actions) actions.prepend(dlAllBtn);
+
+                // Hide Bulk Retouch if max selection is small
                 if (elements.btnBulkRetouch) {
-                    // User logic: "12 bilder paket -> 1 retouche". Bulk makes no sense for 1 image.
                     elements.btnBulkRetouch.style.display = 'none';
                 }
 
