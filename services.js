@@ -367,7 +367,7 @@ class SelectStudioService {
         if (type === 'UPLOAD_READY') {
             templateParams.subject = "Deine Galerie ist online! 📸";
             
-            // Matches user's new EmailJS template ({{message}} -> Button -> {{message2}})
+            // Matches user's new EmailJS template ({{message}} -> Button/Link -> {{message2}})
             templateParams.message = `Vielen Dank für deine Buchung und dein Vertrauen.\n\nDeine Galerie ist bereit!\n\nWähle jetzt deine Favoriten für die finale Retusche:`;
             
             templateParams.message2 = `Die retuschierten Bilder erhältst du innerhalb von 48 Stunden.\nWeitere Bilder können auf Wunsch gegen Aufpreis retuschiert werden.\n\nIch freue mich auf deine Auswahl.\n\nLiebe Grüsse\nNora\nNOWA Studio`;
@@ -383,6 +383,7 @@ class SelectStudioService {
 
             templateParams.subject = `Kunde ${project.email} hat ausgewählt ✅`;
             templateParams.message = `Der Kunde ${project.email} hat seine Foto- und Retusche-Auswahl getroffen (${Object.keys(project.selections).length} Bilder). Du kannst die Bilder über diesen Link herunterladen und bearbeiten.`;
+            templateParams.message2 = ""; // Reset for safety
 
             // Fix: Deep link to specific project in Admin Dashboard
             templateParams.link_action = `${adminUrl}?projectId=${project.id}`;
