@@ -496,12 +496,18 @@
                 dropZone.style.borderColor = '#333';
                 handleFiles(e.dataTransfer.files);
             });
-            fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+                e.target.value = ''; // Reset
+            });
 
             function handleFiles(files) {
-                selectedFiles = Array.from(files);
-                previewArea.innerHTML = '';
+                selectedFiles = [...selectedFiles, ...Array.from(files)];
+                renderPreviews();
+            }
 
+            function renderPreviews() {
+                previewArea.innerHTML = '';
                 if (selectedFiles.length === 0) return;
 
                 const grid = document.createElement('div');
@@ -509,27 +515,50 @@
                 grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(80px, 1fr))';
                 grid.style.gap = '10px';
                 grid.style.marginTop = '20px';
+                grid.style.maxHeight = '300px';
+                grid.style.overflowY = 'auto';
 
-                selectedFiles.slice(0, 10).forEach(file => { // Show max 10 preview
+                selectedFiles.forEach((file, index) => {
+                    const wrapper = document.createElement('div');
+                    wrapper.style.position = 'relative';
+                    wrapper.style.aspectRatio = '1';
+
                     const img = document.createElement('img');
                     img.src = URL.createObjectURL(file);
                     img.style.width = '100%';
-                    img.style.aspectRatio = '1';
+                    img.style.height = '100%';
                     img.style.objectFit = 'cover';
                     img.style.borderRadius = '4px';
-                    grid.appendChild(img);
-                });
 
-                if (selectedFiles.length > 10) {
-                    const more = document.createElement('div');
-                    more.textContent = `+${selectedFiles.length - 10} mehr`;
-                    more.style.display = 'flex';
-                    more.style.alignItems = 'center';
-                    more.style.justifyContent = 'center';
-                    more.style.fontSize = '0.8rem';
-                    more.style.color = '#888';
-                    grid.appendChild(more);
-                }
+                    const delBtn = document.createElement('button');
+                    delBtn.innerHTML = '&times;';
+                    delBtn.style.position = 'absolute';
+                    delBtn.style.top = '4px';
+                    delBtn.style.left = '4px';
+                    delBtn.style.background = 'rgba(255, 0, 0, 0.8)';
+                    delBtn.style.color = '#fff';
+                    delBtn.style.border = 'none';
+                    delBtn.style.borderRadius = '50%';
+                    delBtn.style.width = '20px';
+                    delBtn.style.height = '20px';
+                    delBtn.style.cursor = 'pointer';
+                    delBtn.style.display = 'flex';
+                    delBtn.style.alignItems = 'center';
+                    delBtn.style.justifyContent = 'center';
+                    delBtn.style.fontSize = '14px';
+                    delBtn.style.lineHeight = '1';
+                    
+                    delBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        selectedFiles.splice(index, 1);
+                        renderPreviews(); // Re-render
+                    };
+
+                    wrapper.appendChild(img);
+                    wrapper.appendChild(delBtn);
+                    grid.appendChild(wrapper);
+                });
 
                 previewArea.appendChild(grid);
             }
