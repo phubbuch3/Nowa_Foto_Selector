@@ -418,21 +418,19 @@
                             Abschließen</button>
                     </div>
                 </div>
-                <!-- Project Detail Modal -->
-                ...
-
-                <!-- NEW: Preview Image Modal for Dashboard -->
-                <div id="preview-zoom-modal" class="modal-overlay" hidden
-                    style="background: rgba(0,0,0,0.9); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; display: none; align-items: center; justify-content: center;">
-                    <div style="position: relative; max-width: 90%; max-height: 90%;">
-                        <button id="close-preview-zoom"
-                            style="position: absolute; top: -40px; right: 0; background: none; border: none; color: #fff; font-size: 2.5rem; cursor: pointer;">&times;</button>
-                        <img id="preview-zoom-img" src=""
-                            style="max-width: 100%; max-height: 90vh; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
-                    </div>
+                </div> <!-- End detail-modal content -->
+            </div> <!-- End detail-modal -->
+        
+            <!-- NEW: Preview Image Modal for Dashboard (Moved outside to avoid nesting issues) -->
+            <div id="preview-zoom-modal" class="modal-overlay" hidden
+                style="background: rgba(0,0,0,0.9); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5000; display: none; align-items: center; justify-content: center;">
+                <div style="position: relative; max-width: 90%; max-height: 90%;">
+                    <button id="close-preview-zoom"
+                        style="position: absolute; top: -40px; right: 0; background: none; border: none; color: #fff; font-size: 2.5rem; cursor: pointer;">&times;</button>
+                    <img id="preview-zoom-img" src=""
+                        style="max-width: 100%; max-height: 90vh; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
                 </div>
             </div>
-        </div>
 
     </div>
 
@@ -682,7 +680,7 @@
                 grid.style.display = 'grid'; // Ensure grid display
 
                 const packageNames = {
-                    0: "Basic Paket",
+                    0: "Basic",
                     1: "Standard",
                     2: "Advanced",
                     3: "Premium",
