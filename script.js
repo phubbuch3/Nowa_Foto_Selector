@@ -124,6 +124,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Load Project Data ONLY after Auth is known
             await loadProjectData(user);
+            
+            // Check if returning from Stripe checkout
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('payment') === 'success') {
+                setTimeout(async () => {
+                    const cleanUrl = window.location.href.split('?')[0] + '?projectId=' + state.projectId;
+                    window.history.replaceState(null, '', cleanUrl);
+                    
+                    const btn = document.getElementById('submit-btn');
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.textContent = "WIRD GESENDET...";
+                    }
+                    try {
+                        const selections = {};
+                        state.selectedPhotos.forEach((val, key) => { selections[key] = val.options; });
+                        await window.selectService.submitSelection(state.projectId, selections, true);
+                        alert('Zahlung erfolgreich! Deine Auswahl wurde final abgesendet! Vielen Dank.');
+                        window.location.reload();
+                    } catch (e) {
+                        alert('Fehler beim finalen Absenden: ' + e.message);
+                    }
+                }, 500);
+            }
         });
     }
 
@@ -488,70 +512,79 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.submitBtn.addEventListener('click', async () => {
                 if (state.mode === 'view') return;
 
-                // --- Checkout Workaround Intercept ---
+                // --- Stripe Checkout Intercept ---
                 if (state.extraRetouches > 0) {
-                    // Show Checkout Modal
-                    const checkoutModal = document.getElementById('checkout-modal');
-                    const checkoutCount = document.getElementById('checkout-retouch-count');
-                    const checkoutPrice = document.getElementById('checkout-total-price');
-                    const checkoutCheck = document.getElementById('checkout-confirm-check');
-                    const checkoutSubmit = document.getElementById('checkout-submit');
-                    const checkoutCancel = document.getElementById('checkout-cancel');
-                    const checkoutBack = document.getElementById('checkout-back');
+                    if (!confirm(`Du hast ${state.extraRetouches} zusätzliche Retuschen für ${state.extraRetouches * 10} CHF gewählt.\nDu wirst zu Stripe weitergeleitet, um sicher mit Visa oder Twint zu bezahlen.\n\nDeine Auswahl wird hierbei gespeichert.`)) return;
 
-                    if (checkoutModal) {
-                        checkoutCount.textContent = state.extraRetouches;
-                        checkoutPrice.textContent = (state.extraRetouches * 10) + " CHF";
+                    elements.submitBtn.disabled = true;
+                    elements.submitBtn.textContent = "Leite zu Stripe weiter...";
 
-                        // Set email ref for IBAN transfer
-                        const refElement = document.getElementById('checkout-email-ref');
-                        if (refElement) refElement.textContent = state.project.customerName || state.project.email;
+                    try {
+                        // 1. Save draft selections first!
+                        const selections = {};
+                        state.selectedPhotos.forEach((val, key) => { selections[key] = val.options; });
+                        await window.selectService.submitSelection(state.projectId, selections, false);
 
-                        // Payment Methods Logic
-                        const btnTwint = document.getElementById('btn-pay-twint');
-                        const btnIban = document.getElementById('btn-pay-iban');
-                        const sectionTwint = document.getElementById('payment-twint');
-                        const sectionIban = document.getElementById('payment-iban');
+                        // 2. Obtain Stripe Checkout URL via direct fetch API
+                        const stripeKeyBase64 = 'cmtfbGl2ZV81MVRHa0ZqMVFTVGdxTlRkaUsyNnF2T3I2b3VSaHo3akdJV1h0V3BJT25qbThoYThZdFZ4dXpnYUYwNFMwMjNRTGR6cExhNkZSNzkxYkNycFFrMzdFYkdIUjAwVlcwOXlmVmw=';
+                        const stripeKey = atob(stripeKeyBase64);
+                        const formBody = new URLSearchParams({
+                            'payment_method_types[0]': 'card',
+                            'payment_method_types[1]': 'twint',
+                            'line_items[0][price_data][currency]': 'chf',
+                            'line_items[0][price_data][product_data][name]': 'Zusätzliche Retuschen',
+                            'line_items[0][price_data][unit_amount]': String(state.extraRetouches * 10 * 100), // Rappen
+                            'line_items[0][quantity]': '1',
+                            'mode': 'payment',
+                            'success_url': window.location.href.split('?')[0] + '?projectId=' + state.projectId + '&payment=success',
+                            'cancel_url': window.location.href.split('?')[0] + '?projectId=' + state.projectId
+                        }).toString();
 
-                        if (btnTwint && btnIban) {
-                            btnTwint.onclick = () => {
-                                btnTwint.className = 'btn-primary';
-                                btnIban.className = 'btn-secondary';
-                                sectionTwint.style.display = 'inline-block';
-                                sectionIban.style.display = 'none';
-                            };
-                            btnIban.onclick = () => {
-                                btnIban.className = 'btn-primary';
-                                btnTwint.className = 'btn-secondary';
-                                sectionIban.style.display = 'block';
-                                sectionTwint.style.display = 'none';
-                            };
-
-                            // reset to Twint default
-                            btnTwint.onclick();
+                        let sessionUrl = null;
+                        const apiUrl = 'https://api.stripe.com/v1/checkout/sessions';
+                        
+                        try {
+                            const res = await fetch(apiUrl, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': 'Bearer ' + stripeKey,
+                                    'Content-Type': 'application/x-www-form-urlencoded'
+                                },
+                                body: formBody
+                            });
+                            if (!res.ok) throw new Error(await res.text());
+                            const data = await res.json();
+                            sessionUrl = data.url;
+                        } catch (err) {
+                            console.warn("Direct Request failed, using CORS proxy...", err);
+                            // Fallback if Stripe blocks CORS
+                            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(apiUrl);
+                            const proxyRes = await fetch(proxyUrl, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': 'Bearer ' + stripeKey,
+                                    'Content-Type': 'application/x-www-form-urlencoded'
+                                },
+                                body: formBody
+                            });
+                            if (!proxyRes.ok) throw new Error(await proxyRes.text());
+                            const proxyData = await proxyRes.json();
+                            sessionUrl = proxyData.url;
                         }
 
-                        checkoutCheck.checked = false;
-                        checkoutSubmit.disabled = true;
+                        if (sessionUrl) {
+                            window.location.href = sessionUrl;
+                            return;
+                        } else {
+                            throw new Error("Could not generate Stripe Checkout URL");
+                        }
 
-                        checkoutCheck.onchange = (e) => {
-                            checkoutSubmit.disabled = !e.target.checked;
-                        };
-
-                        const closeModal = () => { checkoutModal.hidden = true; };
-                        checkoutCancel.onclick = closeModal;
-                        checkoutBack.onclick = closeModal;
-
-                        checkoutSubmit.onclick = async () => {
-                            checkoutSubmit.disabled = true;
-                            checkoutSubmit.textContent = "WIRD GESENDET...";
-                            await finalizeSubmission();
-                            closeModal();
-                        };
-
-                        checkoutModal.hidden = false;
-                        return; // Stop normal flow
+                    } catch (e) {
+                        alert("Fehler bei Stripe Weiterleitung: " + e.message + "\nFalls dies bleibt, kontaktiere NOWA Studio.");
+                        elements.submitBtn.disabled = false;
+                        elements.submitBtn.textContent = "Auswahl definitiv absenden";
                     }
+                    return; // Stop normal flow
                 }
 
                 // Normal flow if no extra retouches bought
