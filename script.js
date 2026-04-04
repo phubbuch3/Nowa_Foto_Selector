@@ -290,16 +290,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     elements.btnBulkRetouch.style.display = 'none';
                 }
 
+                if (elements.packageSelect) {
+                    elements.packageSelect.value = project.packageSize || 0;
+                    elements.packageSelect.disabled = true;
+                }
+
                 if (state.mode === 'view') {
                     if (elements.submitBtn) elements.submitBtn.style.display = 'none';
                     if (elements.btnSaveDraft) elements.btnSaveDraft.style.display = 'none';
-                    if (elements.packageSelect) elements.packageSelect.disabled = true;
                     document.body.classList.add('read-only');
-                } else {
-                    if (elements.packageSelect) {
-                        elements.packageSelect.value = state.maxSelection;
-                        elements.packageSelect.disabled = true;
-                    }
                 }
 
                 // Restore Selections
