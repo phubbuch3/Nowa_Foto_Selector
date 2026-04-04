@@ -1,0 +1,92 @@
+﻿git : remote: error: 
+GH013: Repository rule 
+violations found for 
+refs/heads/main.        
+In Zeile:1 Zeichen:1
++ git push > 
+git_output.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~
+    + CategoryInfo       
+       : NotSpecified:   
+  (remote: error: ...s   
+ /main.        :Strin    
+g) [], RemoteExcepti    
+on
+    + FullyQualifiedErro 
+   rId : NativeCommandE  
+  rror
+ 
+remote: 
+remote: - GITHUB PUSH 
+PROTECTION        
+remote:   ÔÇöÔÇöÔÇöÔÇöÔÇö
+ÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔ
+ÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇ
+öÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇö
+ÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔ
+ÇöÔÇöÔÇö        
+remote:     Resolve the 
+following violations 
+before pushing again     
+   
+remote: 
+remote:     - Push 
+cannot contain secrets   
+     
+remote: 
+remote:             
+remote:      (?) Learn 
+how to resolve a blocked 
+push        
+remote:      https://docs
+.github.com/code-security
+/secret-scanning/working-
+with-secret-scanning-and-
+push-protection/working-w
+ith-push-protection-from-
+the-command-line#resolvin
+g-a-blocked-push        
+remote:             
+remote:             
+remote:       ÔÇöÔÇö 
+Stripe Live API 
+Restricted Key ÔÇöÔÇöÔÇöÔ
+ÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇ
+öÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇö
+        
+remote:        
+locations:        
+remote:          - 
+commit: 63a570fe4f858f80f
+f29a8df092d84afae445eb3  
+      
+remote:            path: 
+script.js:529        
+remote:             
+remote:        (?) To 
+push, remove secret from 
+commit(s) or follow this 
+URL to allow the secret. 
+       
+remote:        https://gi
+thub.com/phubbuch3/Nowa_F
+oto_Selector/security/sec
+ret-scanning/unblock-secr
+et/3BtAGmzKkqxNlDpQEwgACa
+mb0k0        
+remote:             
+remote: 
+remote: 
+To https://github.com/phu
+bbuch3/Nowa_Foto_Selector
+.git
+ ! [remote rejected] 
+main -> main (push 
+declined due to 
+repository rule 
+violations)
+error: failed to push 
+some refs to 'https://git
+hub.com/phubbuch3/Nowa_Fo
+to_Selector.git'

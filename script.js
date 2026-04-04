@@ -245,8 +245,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 state.maxRetouches = state.baseMaxRetouches + state.extraRetouches;
                 state.maxSelection = state.maxRetouches;
 
-                if (elements.extraRetouchCount) elements.extraRetouchCount.textContent = state.extraRetouches;
-
                 console.log("Project loaded:", project.email, "Max Selection:", state.maxSelection);
 
                 // Update UI Title
@@ -1392,14 +1390,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const percent = state.maxRetouches > 0 ? (retouchCount / state.maxRetouches) * 100 : 0;
         elements.progressFill.style.width = `${percent}%`;
 
-        // Update label text
-        if (elements.retouchCounterLabel) {
-            if (retouchCount === 0) {
-                elements.retouchCounterLabel.textContent = 'Noch keine Retouchen gewählt';
-            } else {
-                elements.retouchCounterLabel.textContent = 'Bilder für Retouchen gewählt';
-            }
+        // Update Extra Retouches Summary
+        const extraRetouchSummary = document.getElementById('extra-retouch-summary-text');
+        const extraRetouchCountLabel = document.getElementById('extra-retouch-count');
+        const extraRetouchTotalPrice = document.getElementById('extra-retouch-total-price');
+
+        if (extraRetouchSummary) {
+            extraRetouchSummary.textContent = `+ ${state.extraRetouches} (=${state.extraRetouches * 10} CHF)`;
         }
+        if (extraRetouchCountLabel) extraRetouchCountLabel.textContent = `${state.extraRetouches}`;
+        if (extraRetouchTotalPrice) extraRetouchTotalPrice.textContent = `${state.extraRetouches * 10}`;
 
         if (elements.submitBtn) elements.submitBtn.disabled = (retouchCount === 0);
         if (elements.btnSaveDraft) elements.btnSaveDraft.disabled = (retouchCount === 0);
