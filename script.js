@@ -522,55 +522,27 @@ document.addEventListener('DOMContentLoaded', () => {
                         state.selectedPhotos.forEach((val, key) => { selections[key] = val.options; });
                         await window.selectService.submitSelection(state.projectId, selections, false);
 
-                        // 2. Obtain Stripe Checkout URL via direct fetch API
-                        const stripeKeyBase64 = 'cmtfbGl2ZV81MVRHa0ZqMVFTVGdxTlRkaUsyNnF2T3I2b3VSaHo3akdJV1h0V3BJT25qbThoYThZdFZ4dXpnYUYwNFMwMjNRTGR6cExhNkZSNzkxYkNycFFrMzdFYkdIUjAwVlcwOXlmVmw=';
-                        const stripeKey = atob(stripeKeyBase64);
-                        const formBody = new URLSearchParams({
-                            'payment_method_types[0]': 'card',
-                            'payment_method_types[1]': 'twint',
-                            'line_items[0][price_data][currency]': 'chf',
-                            'line_items[0][price_data][product_data][name]': 'Zusätzliche Retuschen',
-                            'line_items[0][price_data][unit_amount]': String(state.extraRetouches * 10 * 100), // Rappen
-                            'line_items[0][quantity]': '1',
-                            'mode': 'payment',
-                            'success_url': window.location.href.split('?')[0] + '?projectId=' + state.projectId + '&payment=success',
-                            'cancel_url': window.location.href.split('?')[0] + '?projectId=' + state.projectId
-                        }).toString();
+                        // 2. Call Vercel serverless function to get Stripe checkout URL
+                        const bodyData = {
+                            amount: state.extraRetouches * 10,
+                            projectId: state.projectId,
+                            successUrl: window.location.href.split('?')[0] + '?projectId=' + state.projectId + '&payment=success',
+                            cancelUrl: window.location.href.split('?')[0] + '?projectId=' + state.projectId
+                        };
 
-                        let sessionUrl = null;
-                        const apiUrl = 'https://api.stripe.com/v1/checkout/sessions';
-                        
-                        try {
-                            const res = await fetch(apiUrl, {
-                                method: 'POST',
-                                headers: {
-                                    'Authorization': 'Bearer ' + stripeKey,
-                                    'Content-Type': 'application/x-www-form-urlencoded'
-                                },
-                                body: formBody
-                            });
-                            if (!res.ok) throw new Error(await res.text());
-                            const data = await res.json();
-                            sessionUrl = data.url;
-                        } catch (err) {
-                            console.warn("Direct Request failed, using CORS proxy...", err);
-                            // Fallback if Stripe blocks CORS
-                            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(apiUrl);
-                            const proxyRes = await fetch(proxyUrl, {
-                                method: 'POST',
-                                headers: {
-                                    'Authorization': 'Bearer ' + stripeKey,
-                                    'Content-Type': 'application/x-www-form-urlencoded'
-                                },
-                                body: formBody
-                            });
-                            if (!proxyRes.ok) throw new Error(await proxyRes.text());
-                            const proxyData = await proxyRes.json();
-                            sessionUrl = proxyData.url;
+                        const res = await fetch('/api/stripe', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(bodyData)
+                        });
+
+                        if (!res.ok) {
+                            throw new Error(await res.text());
                         }
 
-                        if (sessionUrl) {
-                            window.location.href = sessionUrl;
+                        const data = await res.json();
+                        if (data.url) {
+                            window.location.href = data.url;
                             return;
                         } else {
                             throw new Error("Could not generate Stripe Checkout URL");
