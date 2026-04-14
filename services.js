@@ -152,6 +152,13 @@ class SelectStudioService {
         // Note: Email notification for extra retouches is deferred to final submission
     }
 
+    async updateProjectHasPauschale(id, hasPauschale) {
+        const snapshot = await this.db.collection('projects').where('id', '==', id).get();
+        if (snapshot.empty) throw new Error('Project not found');
+
+        await snapshot.docs[0].ref.update({ hasPauschale: Boolean(hasPauschale) });
+    }
+
     async logDownload(projectId) {
         const snapshot = await this.db.collection('projects').where('id', '==', projectId).get();
         if (snapshot.empty) return;

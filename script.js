@@ -227,22 +227,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 state.currentAssets = project.assets || [];
 
                 const packageLimits = {
-                    0: { images: 5, retouches: 0 },
-                    1: { images: 12, retouches: 1 },
-                    2: { images: 20, retouches: 2 },
-                    3: { images: 30, retouches: 3 },
-                    4: { images: 35, retouches: 4 }
+                    0: { images: 5, retouches: 1, pauschale: 15 },
+                    1: { images: 12, retouches: 3, pauschale: 25 },
+                    2: { images: 20, retouches: 5, pauschale: 35 },
+                    3: { images: 30, retouches: 8, pauschale: 45 },
+                    4: { images: 35, retouches: 10, pauschale: 55 }
                 };
 
                 let pkgIndex = parseInt(project.packageSize) || 0;
                 if (!packageLimits[pkgIndex]) pkgIndex = 0;
 
+                state.pkgIndex = pkgIndex;
+                state.packageLimits = packageLimits;
+                state.hasPauschale = project.hasPauschale || false;
+
                 state.baseMaxImages = packageLimits[pkgIndex].images;
                 state.baseMaxRetouches = packageLimits[pkgIndex].retouches;
                 state.extraRetouches = project.extraRetouches || 0;
 
-                // Selection limit is now strictly the number of retouches
-                state.maxRetouches = state.baseMaxRetouches + state.extraRetouches;
+                // Selection limit depends on whether Pauschale is active
+                state.maxRetouches = state.hasPauschale ? state.baseMaxImages : state.baseMaxRetouches + state.extraRetouches;
                 state.maxSelection = state.maxRetouches;
 
                 console.log("Project loaded:", project.email, "Max Selection:", state.maxSelection);
@@ -404,8 +408,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Buy Extra Retouch Handlers
         if (elements.btnAddRetouch) {
             elements.btnAddRetouch.addEventListener('click', async () => {
-                if (state.mode === 'view') return;
-                if (confirm("Möchtest du +1 zusätzliches Bild inklusive +1 Retusche für 10 CHF hinzufügen?")) {
+                if (state.mode === 'view' || state.hasPauschale) return;
+                if (confirm("Möchtest du +1 zusätzliches Bild inklusive +1 Retusche für 7 CHF hinzufügen?")) {
                     const originalText = elements.btnAddRetouch.textContent;
                     elements.btnAddRetouch.textContent = "…";
                     elements.btnAddRetouch.disabled = true;
@@ -416,21 +420,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         state.maxRetouches = state.baseMaxRetouches + state.extraRetouches;
                         state.maxSelection = state.maxRetouches; 
-                        
-                        // Handle Basic package
-                        if (state.maxRetouches > 0) {
-                            
-                        }
 
                         syncAllRetouchCounters();
                         updateSummary();
-                        alert("Erfolgreich hinzugefügt! NOWA Studio wird bei Klick auf 'Auswahl definitiv absenden' benachrichtigt.");
+                        // alert removed to keep UI flowing
                     } catch (e) {
                         state.extraRetouches--;
                         alert("Fehler beim Kauf: " + e.message);
                     } finally {
                         elements.btnAddRetouch.textContent = originalText;
-                        elements.btnAddRetouch.disabled = false;
+                        elements.btnAddRetouch.disabled = false || state.hasPauschale;
                     }
                 }
             });
@@ -438,7 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (elements.btnRemoveRetouch) {
             elements.btnRemoveRetouch.addEventListener('click', async () => {
-                if (state.mode === 'view' || state.extraRetouches <= 0) return;
+                if (state.mode === 'view' || state.extraRetouches <= 0 || state.hasPauschale) return;
 
                 const totalUsedRetouchSlots = getUsedRetouchSlots(null);
                 const totalPhotosSelected = state.selectedPhotos.size;
@@ -448,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                if (confirm("Möchtest du -1 Retusche & Bild (10 CHF) entfernen?")) {
+                if (confirm("Möchtest du -1 Retusche & Bild (7 CHF) entfernen?")) {
                     const originalText = elements.btnRemoveRetouch.textContent;
                     elements.btnRemoveRetouch.textContent = "…";
                     elements.btnRemoveRetouch.disabled = true;
@@ -460,11 +459,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         state.maxRetouches = state.baseMaxRetouches + state.extraRetouches;
                         state.maxSelection = state.maxRetouches;
 
-                        // Re-disable selection if they go back to 0
-                        if (state.maxRetouches === 0) {
-                            // document.body.classList.add('no-selection');
-                        }
-
                         syncAllRetouchCounters();
                         updateSummary();
                     } catch (e) {
@@ -472,11 +466,49 @@ document.addEventListener('DOMContentLoaded', () => {
                         alert("Fehler beim Entfernen: " + e.message);
                     } finally {
                         elements.btnRemoveRetouch.textContent = originalText;
-                        elements.btnRemoveRetouch.disabled = false;
+                        elements.btnRemoveRetouch.disabled = false || state.extraRetouches <= 0 || state.hasPauschale;
                     }
                 }
             });
         }
+
+        // --- Pauschale Checkbox Listeners ---
+        const pauschaleCheckboxes = ['checkbox-pauschale', 'mobile-checkbox-pauschale'];
+        pauschaleCheckboxes.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('change', async (e) => {
+                    const price = state.packageLimits[state.pkgIndex].pauschale;
+                    if (e.target.checked) {
+                        // Turning ON Pauschale
+                        if (confirm(`Pauschale aktivieren? Du erhältst unlimitierte Retuschen für alle (${state.baseMaxImages}) Bilder für ${price} CHF. Eventuell getätigte Einzel-Zusatzkäufe werden deaktiviert.`)) {
+                            state.hasPauschale = true;
+                            // Persist to firebase conceptually, but actually we wait for Stripe checkout.
+                            // However, we should save state now so if they reload they don't lose it.
+                        } else {
+                            e.target.checked = false;
+                        }
+                    } else {
+                        // Turning OFF Pauschale
+                        // Need to check if user has made too many selections
+                        const totalUsedRetouchSlots = getUsedRetouchSlots(null);
+                        const hypotheticalLimit = state.baseMaxRetouches + state.extraRetouches;
+                        if (totalUsedRetouchSlots > hypotheticalLimit) {
+                            alert(`Du hast bereits ${totalUsedRetouchSlots} Retuschen ausgewählt. Bitte wähle einige ab, um unter das Limit von ${hypotheticalLimit} (oder Pauschale) zu kommen, bevor du die Pauschale deaktivierst.`);
+                            e.target.checked = true;
+                            return;
+                        }
+                        state.hasPauschale = false;
+                    }
+                    
+                    // Update max retouches and UI
+                    state.maxRetouches = state.hasPauschale ? state.baseMaxImages : state.baseMaxRetouches + state.extraRetouches;
+                    state.maxSelection = state.maxRetouches;
+                    syncAllRetouchCounters();
+                    updateSummary();
+                });
+            }
+        });
 
         // Save Draft
         if (elements.btnSaveDraft) {
@@ -510,22 +542,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (state.mode === 'view') return;
 
                 // --- Stripe Checkout Intercept ---
-                if (state.extraRetouches > 0) {
-                    if (!confirm(`Du hast ${state.extraRetouches} zusätzliche Retuschen für ${state.extraRetouches * 10} CHF gewählt.\nDu wirst zu Stripe weitergeleitet, um sicher mit Visa oder Twint zu bezahlen.\n\nDeine Auswahl wird hierbei gespeichert.`)) return;
+                if (state.extraRetouches > 0 || state.hasPauschale) {
+                    const price = state.hasPauschale ? state.packageLimits[state.pkgIndex].pauschale : state.extraRetouches * 7;
+                    const desc = state.hasPauschale ? `die unlimitierte Pauschale für ${price} CHF` : `${state.extraRetouches} zusätzliche Retuschen für ${price} CHF`;
+                    if (!confirm(`Du hast ${desc} gewählt.\nDu wirst zu Stripe weitergeleitet, um sicher mit Visa oder Twint zu bezahlen.\n\nDeine Auswahl wird hierbei gespeichert.`)) return;
 
                     elements.submitBtn.disabled = true;
                     elements.submitBtn.textContent = "Leite zu Stripe weiter...";
 
                     try {
-                        // 1. Save draft selections first!
+                        // 1. Save draft selections and pauschale state first!
                         const selections = {};
                         state.selectedPhotos.forEach((val, key) => { selections[key] = val.options; });
                         await window.selectService.submitSelection(state.projectId, selections, false);
+                        
+                        // We also need to save hasPauschale to the project if it isn't saved yet
+                        await window.selectService.updateProjectHasPauschale(state.projectId, state.hasPauschale);
 
                         // 2. Call Vercel serverless function to get Stripe checkout URL
                         const bodyData = {
-                            amount: state.extraRetouches * 10,
+                            amount: price,
                             projectId: state.projectId,
+                            isPauschale: state.hasPauschale,
                             successUrl: window.location.href.split('?')[0] + '?projectId=' + state.projectId + '&payment=success',
                             cancelUrl: window.location.href.split('?')[0] + '?projectId=' + state.projectId
                         };
@@ -1361,16 +1399,61 @@ document.addEventListener('DOMContentLoaded', () => {
         const percent = state.maxRetouches > 0 ? (retouchCount / state.maxRetouches) * 100 : 0;
         elements.progressFill.style.width = `${percent}%`;
 
+        // Update target price values from package Config
+        const pPrice = state.packageLimits[state.pkgIndex].pauschale;
+        if (document.getElementById('pauschale-price-label')) document.getElementById('pauschale-price-label').textContent = pPrice;
+        if (document.getElementById('mobile-pauschale-price-label')) document.getElementById('mobile-pauschale-price-label').textContent = pPrice;
+        
+        // Sync Pauschale Checkboxes
+        const inPauschale = document.getElementById('checkbox-pauschale');
+        if (inPauschale) inPauschale.checked = state.hasPauschale;
+        const mInPauschale = document.getElementById('mobile-checkbox-pauschale');
+        if (mInPauschale) mInPauschale.checked = state.hasPauschale;
+
         // Update Extra Retouches Summary
         const extraRetouchSummary = document.getElementById('extra-retouch-summary-text');
         const extraRetouchCountLabel = document.getElementById('extra-retouch-count');
         const extraRetouchTotalPrice = document.getElementById('extra-retouch-total-price');
 
         if (extraRetouchSummary) {
-            extraRetouchSummary.textContent = `+ ${state.extraRetouches} (=${state.extraRetouches * 10} CHF)`;
+            extraRetouchSummary.textContent = state.hasPauschale ? `Pauschale (${pPrice} CHF)` : `+ ${state.extraRetouches} (=${state.extraRetouches * 7} CHF)`;
         }
         if (extraRetouchCountLabel) extraRetouchCountLabel.textContent = `${state.extraRetouches}`;
-        if (extraRetouchTotalPrice) extraRetouchTotalPrice.textContent = `${state.extraRetouches * 10}`;
+        
+        if (state.hasPauschale) {
+            if (extraRetouchTotalPrice) extraRetouchTotalPrice.textContent = `${pPrice}`;
+            if (document.getElementById('mobile-retouch-total-price')) document.getElementById('mobile-retouch-total-price').textContent = `${pPrice} CHF Total`;
+            
+            // disable individual add/rem
+            if (elements.btnAddRetouch) {
+                elements.btnAddRetouch.disabled = true;
+                elements.btnAddRetouch.style.background = '#333';
+                elements.btnAddRetouch.style.cursor = 'not-allowed';
+            }
+            if (elements.btnRemoveRetouch) {
+                elements.btnRemoveRetouch.disabled = true;
+                elements.btnRemoveRetouch.style.background = '#333';
+                elements.btnRemoveRetouch.style.cursor = 'not-allowed';
+            }
+            if (elements.mobileBtnAddRetouch) elements.mobileBtnAddRetouch.disabled = true;
+            if (elements.mobileBtnRemoveRetouch) elements.mobileBtnRemoveRetouch.disabled = true;
+        } else {
+            if (extraRetouchTotalPrice) extraRetouchTotalPrice.textContent = `${state.extraRetouches * 7}`;
+            if (document.getElementById('mobile-retouch-total-price')) document.getElementById('mobile-retouch-total-price').textContent = `${state.extraRetouches * 7} CHF Total`;
+            
+            if (elements.btnAddRetouch) {
+                elements.btnAddRetouch.disabled = false;
+                elements.btnAddRetouch.style.background = '#fff';
+                elements.btnAddRetouch.style.cursor = 'pointer';
+            }
+            if (elements.btnRemoveRetouch) {
+                elements.btnRemoveRetouch.disabled = state.extraRetouches <= 0;
+                elements.btnRemoveRetouch.style.background = state.extraRetouches <= 0 ? '#333' : '#fff';
+                elements.btnRemoveRetouch.style.cursor = state.extraRetouches <= 0 ? 'not-allowed' : 'pointer';
+            }
+            if (elements.mobileBtnAddRetouch) elements.mobileBtnAddRetouch.disabled = false;
+            if (elements.mobileBtnRemoveRetouch) elements.mobileBtnRemoveRetouch.disabled = state.extraRetouches <= 0;
+        }
 
         if (elements.submitBtn) elements.submitBtn.disabled = (retouchCount === 0);
         if (elements.btnSaveDraft) elements.btnSaveDraft.disabled = (retouchCount === 0);
@@ -1384,7 +1467,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // List
         elements.selectedList.innerHTML = '';
         if (retouchCount === 0) {
-            elements.selectedList.innerHTML = '<div class="empty-state">Noch keine Bilder gewählt.</div>';
+            elements.selectedList.innerHTML = '<div class="empty-state"></div>';
             return;
         }
 
@@ -1412,18 +1495,7 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.selectedList.appendChild(item);
         });
 
-        // Update Extra Retouch buttons state
-        if (elements.btnRemoveRetouch) {
-            if (state.extraRetouches <= 0) {
-                elements.btnRemoveRetouch.disabled = true;
-                elements.btnRemoveRetouch.style.background = '#333';
-                elements.btnRemoveRetouch.style.cursor = 'not-allowed';
-            } else {
-                elements.btnRemoveRetouch.disabled = false;
-                elements.btnRemoveRetouch.style.background = 'var(--color-text)'; // White
-                elements.btnRemoveRetouch.style.cursor = 'pointer';
-            }
-        }
+        // Extra retouch logic handled in updateSummary mostly now
 
         // --- Admin Submit Button (Retuschen übermitteln) ---
         if (state.currentUser && state.project && state.project.status === 'PROCESSING') {
