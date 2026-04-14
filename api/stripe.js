@@ -10,8 +10,6 @@ export default async function handler(req, res) {
     const { amount, projectId, successUrl, cancelUrl } = req.body;
 
     const formBody = new URLSearchParams({
-        'payment_method_types[0]': 'card',
-        'payment_method_types[1]': 'twint',
         'line_items[0][price_data][currency]': 'chf',
         'line_items[0][price_data][product_data][name]': 'Zusätzliche Retuschen',
         'line_items[0][price_data][unit_amount]': String(amount * 100), // in Rappen
