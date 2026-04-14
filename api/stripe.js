@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const stripeKeyBase64 = 'cmtfbGl2ZV81MVRHa0ZqMVFTVGdxTlRkaUsyNnF2T3I2b3VSaHo3akdJV1h0V3BJT25qbThoYThZdFZ4dXpnYUYwNFMwMjNRTGR6cExhNkZSNzkxYkNycFFrMzdFYkdIUjAwVlcwOXlmVmw=';
+    const stripeKeyBase64 = 'cmtfbGl2ZV81MVRHa0ZqMVFTVGdxTlRkaXluYk5DVjNNV21VUmdpWmVUeWxtT1FiWEJhWkRXdnBXc2VOMzBUVGtTSVFiMWlaa00xRld6NnhvdWU3Q1dnenh0WjdIM0JnNzAwZ0lkZ0x1QzE=';
     const stripeKey = Buffer.from(stripeKeyBase64, 'base64').toString('utf-8');
 
     const { amount, projectId, successUrl, cancelUrl } = req.body;
