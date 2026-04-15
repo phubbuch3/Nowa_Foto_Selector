@@ -12,7 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
         currentAssets: [],
         selectedPhotos: new Map(), // Map<id, {options: []}>
         lightboxIndex: -1,
-        currentUser: null // Admin User
+        currentUser: null, // Admin User
+        lastUsedOptions: []
     };
 
     // --- DOM Elements ---
@@ -57,6 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
         modalClose: document.getElementById('modal-close'),
         modalCancel: document.getElementById('modal-cancel'),
         modalSave: document.getElementById('modal-save'),
+        modalSaveAll: document.getElementById('modal-save-all'),
+        saveAllContainer: document.getElementById('save-all-container'),
         retouchForm: document.getElementById('retouch-form'),
         modalDeselect: document.getElementById('modal-deselect'),
 
@@ -394,6 +397,43 @@ document.addEventListener('DOMContentLoaded', () => {
         if (elements.modalClose) elements.modalClose.addEventListener('click', closeSelectionModal);
         if (elements.modalCancel) elements.modalCancel.addEventListener('click', closeSelectionModal);
         if (elements.modalSave) elements.modalSave.addEventListener('click', saveModalSelection);
+
+        if (elements.modalSaveAll) {
+            elements.modalSaveAll.addEventListener('click', () => {
+                if (!activePhotoId) return;
+
+                const checkboxes = elements.retouchForm.querySelectorAll('input:checked');
+                const options = Array.from(checkboxes).map(cb => cb.value);
+
+                if (options.length === 0) {
+                    alert('Bitte wähle mindestens eine Retusche aus, um sie für alle Bilder zu speichern.');
+                    return;
+                }
+
+                state.lastUsedOptions = options;
+
+                let applyCount = 0;
+                state.selectedPhotos.forEach(photo => {
+                    state.selectedPhotos.set(photo.id, { id: photo.id, options });
+                    updateUIForSelection(photo.id, true);
+                    applyCount++;
+                });
+
+                // Apply to current active photo even if not successfully selected yet
+                if (!state.selectedPhotos.has(activePhotoId)) {
+                    if (state.selectedPhotos.size < state.maxSelection) {
+                        state.selectedPhotos.set(activePhotoId, { id: activePhotoId, options });
+                        updateUIForSelection(activePhotoId, true);
+                        applyCount++;
+                    }
+                }
+
+                alert(`Retusche-Einstellungen wurden auf ${applyCount} ausgewählte Bilder angewendet.`);
+                updateSummary();
+                closeSelectionModal();
+                updateLightboxButton();
+            });
+        }
         if (elements.modalDeselect) elements.modalDeselect.addEventListener('click', () => {
             if (activePhotoId) {
                 removeSelection(activePhotoId);
@@ -1238,11 +1278,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 checkboxes.forEach(cb => {
                     if (data.options.includes(cb.value)) cb.checked = true;
                 });
-                elements.modalSave.textContent = "UPDATE SPEICHERN";
+                elements.modalSave.textContent = "SPEICHERN";
                 elements.modalDeselect.style.visibility = 'visible';
             } else {
-                elements.modalSave.textContent = "SPEICHERN & AUSWÄHLEN";
+                if (state.lastUsedOptions && state.lastUsedOptions.length > 0) {
+                    const checkboxes = elements.retouchForm.querySelectorAll('input');
+                    checkboxes.forEach(cb => {
+                        if (state.lastUsedOptions.includes(cb.value)) cb.checked = true;
+                    });
+                }
+                elements.modalSave.textContent = "SPEICHERN";
                 elements.modalDeselect.style.visibility = 'hidden';
+            }
+
+            if (elements.saveAllContainer) {
+                if (state.selectedPhotos.size > 0 && id !== 'BULK') {
+                    elements.saveAllContainer.style.display = 'flex';
+                } else {
+                    elements.saveAllContainer.style.display = 'none';
+                }
             }
 
             // Counter display for retouch slots (images with retouches)
@@ -1298,6 +1352,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const checkboxes = elements.retouchForm.querySelectorAll('input:checked');
         const options = Array.from(checkboxes).map(cb => cb.value);
+
+        if (options.length > 0) {
+            state.lastUsedOptions = options;
+        }
 
         // Retouch IS required — customer must select at least 1 retouch to save
         if (options.length === 0 && activePhotoId !== 'BULK') {
