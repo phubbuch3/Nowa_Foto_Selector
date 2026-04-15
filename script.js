@@ -1486,15 +1486,25 @@ document.addEventListener('DOMContentLoaded', () => {
             if (elements.btnAddRetouch) {
                 elements.btnAddRetouch.disabled = true;
                 elements.btnAddRetouch.style.background = '#333';
+                elements.btnAddRetouch.style.color = '#fff';
                 elements.btnAddRetouch.style.cursor = 'not-allowed';
             }
             if (elements.btnRemoveRetouch) {
                 elements.btnRemoveRetouch.disabled = true;
                 elements.btnRemoveRetouch.style.background = '#333';
+                elements.btnRemoveRetouch.style.color = '#fff';
                 elements.btnRemoveRetouch.style.cursor = 'not-allowed';
             }
-            if (elements.mobileBtnAddRetouch) elements.mobileBtnAddRetouch.disabled = true;
-            if (elements.mobileBtnRemoveRetouch) elements.mobileBtnRemoveRetouch.disabled = true;
+            if (elements.mobileBtnAddRetouch) {
+                elements.mobileBtnAddRetouch.disabled = true;
+                elements.mobileBtnAddRetouch.style.background = '#333';
+                elements.mobileBtnAddRetouch.style.color = '#fff';
+            }
+            if (elements.mobileBtnRemoveRetouch) {
+                elements.mobileBtnRemoveRetouch.disabled = true;
+                elements.mobileBtnRemoveRetouch.style.background = '#333';
+                elements.mobileBtnRemoveRetouch.style.color = '#fff';
+            }
         } else {
             if (extraRetouchTotalPrice) extraRetouchTotalPrice.textContent = `${state.extraRetouches * 7}`;
             if (document.getElementById('mobile-retouch-total-price')) document.getElementById('mobile-retouch-total-price').textContent = `${state.extraRetouches * 7} CHF Total`;
@@ -1502,15 +1512,25 @@ document.addEventListener('DOMContentLoaded', () => {
             if (elements.btnAddRetouch) {
                 elements.btnAddRetouch.disabled = false;
                 elements.btnAddRetouch.style.background = '#fff';
+                elements.btnAddRetouch.style.color = '#000';
                 elements.btnAddRetouch.style.cursor = 'pointer';
             }
             if (elements.btnRemoveRetouch) {
                 elements.btnRemoveRetouch.disabled = state.extraRetouches <= 0;
                 elements.btnRemoveRetouch.style.background = state.extraRetouches <= 0 ? '#333' : '#fff';
+                elements.btnRemoveRetouch.style.color = state.extraRetouches <= 0 ? '#fff' : '#000';
                 elements.btnRemoveRetouch.style.cursor = state.extraRetouches <= 0 ? 'not-allowed' : 'pointer';
             }
-            if (elements.mobileBtnAddRetouch) elements.mobileBtnAddRetouch.disabled = false;
-            if (elements.mobileBtnRemoveRetouch) elements.mobileBtnRemoveRetouch.disabled = state.extraRetouches <= 0;
+            if (elements.mobileBtnAddRetouch) {
+                elements.mobileBtnAddRetouch.disabled = false;
+                elements.mobileBtnAddRetouch.style.background = '#fff';
+                elements.mobileBtnAddRetouch.style.color = '#000';
+            }
+            if (elements.mobileBtnRemoveRetouch) {
+                elements.mobileBtnRemoveRetouch.disabled = state.extraRetouches <= 0;
+                elements.mobileBtnRemoveRetouch.style.background = state.extraRetouches <= 0 ? '#333' : '#fff';
+                elements.mobileBtnRemoveRetouch.style.color = state.extraRetouches <= 0 ? '#fff' : '#000';
+            }
         }
 
         if (elements.submitBtn) elements.submitBtn.disabled = (retouchCount === 0);
