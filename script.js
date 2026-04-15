@@ -1474,7 +1474,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const extraRetouchTotalPrice = document.getElementById('extra-retouch-total-price');
 
         if (extraRetouchSummary) {
-            extraRetouchSummary.textContent = state.hasPauschale ? `Pauschale (${pPrice} CHF)` : `+ ${state.extraRetouches} (=${state.extraRetouches * 7} CHF)`;
+            extraRetouchSummary.textContent = state.hasPauschale ? `Pauschale` : `+ ${state.extraRetouches}`;
         }
         if (extraRetouchCountLabel) extraRetouchCountLabel.textContent = `${state.extraRetouches}`;
         
@@ -1561,10 +1561,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? `<button class="item-remove" onclick="removeSelectionItem('${id}')">&times;</button>`
                 : '';
 
+            const index = state.currentAssets.findIndex(a => a.id === id);
+            const displayTitle = index !== -1 ? `BILD #${String(index + 1).padStart(3, '0')}` : id.replace('IMG_', 'BILD ');
+
             item.innerHTML = `
                 <div class="item-header" style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div style="flex:1;">
-                        <span class="item-id" style="font-weight:bold;">${id.replace('IMG_', 'BILD ')}</span>
+                        <span class="item-id" style="font-weight:bold;">${displayTitle}</span>
                         ${optionsText}
                     </div>
                     ${removeBtn}
